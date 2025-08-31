@@ -28,10 +28,17 @@ const DATA: Destination[] = [
   { id: "queenstown", name: "Queenstown", country: "New Zealand", region: "Oceania", budgetLevel: "$$$", highlights: ["Adventure", "Lakes", "Skiing"] },
 ];
 
+const USER_PLACES_KEY = "tour.userPlaces";
+
 export default function Explore() {
   const [q, setQ] = useState("");
   const [region, setRegion] = useState<string>("");
   const [budget, setBudget] = useState<string>("");
+  const [open, setOpen] = useState(false);
+  const [placeTitle, setPlaceTitle] = useState("");
+  const [placeDesc, setPlaceDesc] = useState("");
+  const [tempPos, setTempPos] = useState<[number, number] | null>(null);
+  const [userPlaces, setUserPlaces] = useState<MapMarker[]>(() => loadJSON<MapMarker[]>(USER_PLACES_KEY, []));
 
   const filtered = useMemo(() => {
     return DATA.filter((d) =>
@@ -40,6 +47,22 @@ export default function Explore() {
       (!budget || d.budgetLevel === budget)
     );
   }, [q, region, budget]);
+
+  function savePlaces(list: MapMarker[]) {
+    setUserPlaces(list);
+    saveJSON(USER_PLACES_KEY, list);
+  }
+
+  function addPlace() {
+    if (!tempPos || !placeTitle) return;
+    const item: MapMarker = { id: crypto.randomUUID(), position: tempPos, title: placeTitle, description: placeDesc };
+    const list = [item, ...userPlaces];
+    savePlaces(list);
+    setOpen(false);
+    setTempPos(null);
+    setPlaceTitle("");
+    setPlaceDesc("");
+  }
 
   return (
     <SiteLayout>
