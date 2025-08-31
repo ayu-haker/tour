@@ -9,7 +9,6 @@ export default function Index() {
   return (
     <SiteLayout>
       <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-b from-indigo-50 to-transparent p-8 md:p-12">
-        <BackgroundCanvas />
         <div className="relative z-10">
           <div className="flex gap-5 max-lg:flex-col">
             <div className="w-1/2 max-lg:w-full">
