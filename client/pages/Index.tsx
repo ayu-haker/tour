@@ -1,62 +1,87 @@
-import { DemoResponse } from "@shared/api";
-import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SiteLayout } from "@/components/layout/SiteLayout";
+import { BackgroundCanvas } from "@/components/three/BackgroundCanvas";
 
 export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
-  useEffect(() => {
-    fetchDemo();
-  }, []);
-
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
-    try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
-    }
-  };
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-            />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
-            />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
-        </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
-      </div>
-    </div>
+    <SiteLayout>
+      <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-b from-indigo-50 to-transparent p-8 md:p-12">
+        <BackgroundCanvas />
+        <div className="relative z-10 max-w-3xl">
+          <p className="text-sm font-semibold tracking-wider text-indigo-600 uppercase">Your travel command center</p>
+          <h1 className="mt-3 text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+            Welcome to <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">TOUR</span>
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Explore destinations, plan budgets, book hotels and rides, order food, and more — all in one place.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button size="lg" asChild>
+              <Link to="/explore">Explore Destinations</Link>
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate('/budget')}>Plan Your Budget</Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">Featured Services</h2>
+          <span className="inline-flex items-center gap-2 rounded-full border bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">Most Popular</span>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ServiceCard title="Hotel Booking" count="100+ hotels" desc="Find and book perfect accommodation" to="/hotels" icon="🏨" />
+          <ServiceCard title="Cab Booking" count="200+ drivers" desc="Book reliable rides to your destination" to="/cabs" icon="🚖" />
+          <ServiceCard title="Food Delivery" count="150+ restaurants" desc="Delicious local cuisine delivered" to="/food" icon="🍜" />
+          <ServiceCard title="Tourist Spots" count="500+ locations" desc="Discover amazing places to visit" to="/spots" icon="🗺️" />
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-2xl font-bold mb-4">Quick Access</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          {[
+            { label: 'Hospitals', to: '/hospitals' },
+            { label: 'Transport', to: '/transport' },
+            { label: 'Budget Planner', to: '/budget' },
+            { label: 'Emergency', to: '/emergency' },
+            { label: 'Profile', to: '/profile' },
+            { label: 'Support', to: '/support' },
+          ].map((q) => (
+            <Link key={q.label} to={q.to} className="rounded-lg border bg-card p-4 text-center hover:shadow-sm transition-shadow">
+              <span className="font-medium">{q.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </SiteLayout>
+  );
+}
+
+function ServiceCard({ title, count, desc, to, icon }: { title: string; count: string; desc: string; to: string; icon: string }) {
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-md bg-blue-100 text-blue-600 text-xl">{icon}</div>
+          <div>
+            <CardTitle className="text-xl">{title}</CardTitle>
+            <span className="text-xs text-muted-foreground">{count}</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <CardDescription>{desc}</CardDescription>
+        <div className="mt-4">
+          <Button asChild variant="secondary">
+            <Link to={to}>Open</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
