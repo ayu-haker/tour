@@ -64,23 +64,26 @@ function hotelsFromPlaces(): Hotel[] {
 export default function Hotels(){
   const { toast } = useToast();
   const [region, setRegion] = useState<string>("North");
-  const [city, setCity] = useState<string>(CITIES["North"][0].name);
+  const [city, setCity] = useState<string>("all");
   const [stars, setStars] = useState<string>("any");
   const [minPrice, setMinPrice] = useState(2000);
   const [maxPrice, setMaxPrice] = useState(12000);
 
+  const allHotels = useMemo(() => [...BASE_HOTELS, ...hotelsFromPlaces()], []);
+
   const cityCenter = useMemo(() => {
+    if (city === "all") return [20.5937, 78.9629] as [number, number];
     const list = Object.values(CITIES).flat();
     return list.find(c => c.name === city)?.center || [20.5937, 78.9629];
   }, [city]);
 
   const results = useMemo(() => {
-    return HOTELS.filter(h =>
-      (!city || h.city === city) &&
+    return allHotels.filter(h =>
+      (city === "all" || h.city === city) &&
       (stars === "any" || h.stars === Number(stars)) &&
       h.price >= minPrice && h.price <= maxPrice
     );
-  }, [city, stars, minPrice, maxPrice]);
+  }, [allHotels, city, stars, minPrice, maxPrice]);
 
   const markers: MapMarker[] = results.map(h => ({ id: h.id, position: h.position, title: `${h.name} • ₹${h.price.toLocaleString("en-IN")}` }));
 
