@@ -17,6 +17,7 @@ export function BackgroundCanvas() {
             "linear-gradient(rgba(2, 6, 23, 0.75), rgba(2, 6, 23, 0.5), rgba(2, 6, 23, 0.35))",
         }}
       />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-12 w-56 md:w-64 bg-background/90" />
     </div>
   );
 }
