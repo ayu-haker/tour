@@ -16,6 +16,8 @@ type Destination = {
   region: "Europe" | "Asia" | "Americas" | "Africa" | "Oceania";
   budgetLevel: "$" | "$$" | "$$$";
   highlights: string[];
+  entryFeeInr?: number;
+  dayCostInr?: number;
 };
 
 const DATA: Destination[] = [
@@ -30,6 +32,8 @@ const DATA: Destination[] = [
 
 const USER_PLACES_KEY = "tour.userPlaces";
 
+const BUDGET_TO_COST_INR: Record<Destination["budgetLevel"], number> = { "$": 2000, "$$": 5000, "$$$": 10000 };
+
 export default function Explore() {
   const [q, setQ] = useState("");
   const [region, setRegion] = useState<string>("");
@@ -37,6 +41,8 @@ export default function Explore() {
   const [open, setOpen] = useState(false);
   const [placeTitle, setPlaceTitle] = useState("");
   const [placeDesc, setPlaceDesc] = useState("");
+  const [entryFee, setEntryFee] = useState<string>("");
+  const [dayCost, setDayCost] = useState<string>("");
   const [tempPos, setTempPos] = useState<[number, number] | null>(null);
   const [userPlaces, setUserPlaces] = useState<MapMarker[]>(() => loadJSON<MapMarker[]>(USER_PLACES_KEY, []));
 
@@ -55,13 +61,19 @@ export default function Explore() {
 
   function addPlace() {
     if (!tempPos || !placeTitle) return;
-    const item: MapMarker = { id: crypto.randomUUID(), position: tempPos, title: placeTitle, description: placeDesc };
+    const pricing = [entryFee ? `Entry ₹${Number(entryFee)}` : null, dayCost ? `Day ₹${Number(dayCost)}` : null]
+      .filter(Boolean)
+      .join(" • ");
+    const desc = [placeDesc, pricing].filter(Boolean).join(" — ");
+    const item: MapMarker = { id: crypto.randomUUID(), position: tempPos, title: placeTitle, description: desc };
     const list = [item, ...userPlaces];
     savePlaces(list);
     setOpen(false);
     setTempPos(null);
     setPlaceTitle("");
     setPlaceDesc("");
+    setEntryFee("");
+    setDayCost("");
   }
 
   return (
@@ -85,9 +97,17 @@ export default function Explore() {
                   <Label htmlFor="d">Description</Label>
                   <Input id="d" value={placeDesc} onChange={(e)=>setPlaceDesc(e.target.value)} />
                 </div>
+                <div>
+                  <Label htmlFor="fee">Entry Fee (₹)</Label>
+                  <Input id="fee" type="number" min={0} value={entryFee} onChange={(e)=>setEntryFee(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="dc">Estimated Day Cost (₹)</Label>
+                  <Input id="dc" type="number" min={0} value={dayCost} onChange={(e)=>setDayCost(e.target.value)} />
+                </div>
               </div>
               <p className="text-sm text-muted-foreground">Click on the map to set the location.</p>
-              <LeafletMap onMapClick={(lat,lng)=>setTempPos([lat,lng])} markers={tempPos ? [{ id:"temp", position: tempPos, title: placeTitle, description: placeDesc }] : []} />
+              <LeafletMap onMapClick={(lat,lng)=>setTempPos([lat,lng])} markers={tempPos ? [{ id:"temp", position: tempPos, title: placeTitle, description: [placeDesc, entryFee && `Entry ₹${entryFee}`, dayCost && `Day ₹${dayCost}`].filter(Boolean).join(" — ") }] : []} />
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={()=>setOpen(false)}>Cancel</Button>
                 <Button onClick={addPlace}>Save</Button>
@@ -139,8 +159,11 @@ export default function Explore() {
               <ul className="list-disc pl-5 text-sm text-muted-foreground">
                 {d.highlights.map((h) => <li key={h}>{h}</li>)}
               </ul>
+              <div className="mt-3 text-sm">
+                <span className="font-medium">Est. day:</span> ₹{(d.dayCostInr ?? BUDGET_TO_COST_INR[d.budgetLevel]).toLocaleString("en-IN")} {d.entryFeeInr ? `• Entry ₹${d.entryFeeInr}` : ""}
+              </div>
               <div className="mt-4">
-                <Button variant="secondary">View Details</Button>
+                <Button variant="secondary">Add to Plan</Button>
               </div>
             </CardContent>
           </Card>
