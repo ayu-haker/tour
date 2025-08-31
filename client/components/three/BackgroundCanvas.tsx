@@ -1,6 +1,6 @@
 export function BackgroundCanvas() {
   return (
-    <div className="pointer-events-none absolute inset-0 -z-10">
+    <div className="pointer-events-none absolute inset-0 z-0">
       <iframe
         src="https://my.spline.design/worldplanet-V69FILemXdD05O9q16QQyccZ/"
         className="h-full w-full"
