@@ -8,8 +8,15 @@ export function BackgroundCanvas() {
         allow="autoplay; fullscreen; xr-spatial-tracking"
         allowFullScreen
         aria-label="3D background"
+        style={{ pointerEvents: "none" }}
       />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/40 via-background/10 to-background/0" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0))",
+        }}
+      />
     </div>
   );
 }
