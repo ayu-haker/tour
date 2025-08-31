@@ -33,7 +33,7 @@ const CITIES: Record<string, { name: string; center: [number, number] }[]> = {
 
 type Hotel = { id: string; name: string; city: string; stars: 3 | 4 | 5; price: number; position: [number, number] };
 
-const HOTELS: Hotel[] = [
+const BASE_HOTELS: Hotel[] = [
   { id: "dl1", name: "Delhi Grand", city: "Delhi", stars: 5, price: 8500, position: [28.6139, 77.213] },
   { id: "dl2", name: "Connaught Suites", city: "Delhi", stars: 4, price: 5200, position: [28.6289, 77.218] },
   { id: "mum1", name: "Marine View", city: "Mumbai", stars: 5, price: 12000, position: [18.9388, 72.8258] },
@@ -47,6 +47,19 @@ const HOTELS: Hotel[] = [
   { id: "kol1", name: "Howrah Horizon", city: "Kolkata", stars: 4, price: 5600, position: [22.585, 88.346] },
   { id: "kochi1", name: "Fort Kochi Heritage", city: "Kochi", stars: 4, price: 5200, position: [9.964, 76.242] },
 ];
+
+const USER_PLACES_KEY = "tour.userPlaces";
+
+function hotelsFromPlaces(): Hotel[] {
+  const places = loadJSON<any[]>(USER_PLACES_KEY, []);
+  const list: Hotel[] = [];
+  for (const p of places) {
+    const [lat, lng] = p.position as [number, number];
+    list.push({ id: `pl-${p.id}-1`, name: `${p.title || "Tourist Spot"} Residency`, city: p.title || "Tourist Spot", stars: 4, price: 4200, position: [lat + 0.01, lng + 0.01] as [number,number] });
+    list.push({ id: `pl-${p.id}-2`, name: `${p.title || "Tourist Spot"} View`, city: p.title || "Tourist Spot", stars: 5, price: 7800, position: [lat - 0.008, lng - 0.008] as [number,number] });
+  }
+  return list;
+}
 
 export default function Hotels(){
   const { toast } = useToast();
