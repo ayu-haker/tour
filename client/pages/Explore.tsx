@@ -101,10 +101,10 @@ export default function Explore() {
         </div>
         <div className="min-w-40">
           <label className="block text-sm font-medium mb-1">Region</label>
-          <Select value={region} onValueChange={setRegion}>
+          <Select value={region} onValueChange={(v)=>setRegion(v === "all" ? "" : v)}>
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="All" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="Europe">Europe</SelectItem>
               <SelectItem value="Asia">Asia</SelectItem>
               <SelectItem value="Americas">Americas</SelectItem>
@@ -115,10 +115,10 @@ export default function Explore() {
         </div>
         <div className="min-w-40">
           <label className="block text-sm font-medium mb-1">Budget</label>
-          <Select value={budget} onValueChange={setBudget}>
+          <Select value={budget} onValueChange={(v)=>setBudget(v === "any" ? "" : v)}>
             <SelectTrigger className="w-[160px]"><SelectValue placeholder="Any" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="any">Any</SelectItem>
               <SelectItem value="$">$ Budget</SelectItem>
               <SelectItem value="$$">$$ Mid</SelectItem>
               <SelectItem value="$$$">$$$ Premium</SelectItem>
