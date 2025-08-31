@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline, useMap, LayersControl, ScaleControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import marker2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -20,13 +20,39 @@ function ClickHandler({ onClick }: { onClick?: (lat: number, lng: number) => voi
 
 type PathSpec = { points: [number, number][]; color?: string; weight?: number; opacity?: number };
 
-export function LeafletMap({ center = [28.6139, 77.209], zoom = 11, markers = [], onMapClick, path, paths }: { center?: [number, number]; zoom?: number; markers?: MapMarker[]; onMapClick?: (lat: number, lng: number) => void; path?: [number, number][]; paths?: PathSpec[] }){
+function FitBounds({ markers, paths }: { markers: MapMarker[]; paths?: PathSpec[] | [number, number][] }){
+  const map = useMap();
+  useEffect(() => {
+    const pts: [number, number][] = [];
+    markers.forEach(m => pts.push(m.position));
+    if (Array.isArray(paths)) {
+      if (paths.length && Array.isArray(paths[0])) pts.push(...(paths as [number,number][]));
+      else (paths as PathSpec[]).forEach(p => pts.push(...p.points));
+    }
+    if (pts.length > 1) {
+      const bounds = L.latLngBounds(pts.map(p => L.latLng(p[0], p[1])));
+      map.fitBounds(bounds.pad(0.2));
+    }
+  }, [markers, paths, map]);
+  return null;
+}
+
+export function LeafletMap({ center = [28.6139, 77.209], zoom = 11, markers = [], onMapClick, path, paths, className }: { center?: [number, number]; zoom?: number; markers?: MapMarker[]; onMapClick?: (lat: number, lng: number) => void; path?: [number, number][]; paths?: PathSpec[]; className?: string }){
   useEffect(() => {
     // Leaflet CSS already imported above; ensure container sizes via parent
   }, []);
   return (
-    <MapContainer center={center} zoom={zoom} className="h-80 w-full rounded-md overflow-hidden border">
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+    <MapContainer center={center} zoom={zoom} className={cn(className ?? "h-80 w-full", "rounded-md overflow-hidden border") as string}>
+      <LayersControl position="topright">
+        <LayersControl.BaseLayer checked name="OpenStreetMap">
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="OpenStreetMap HOT">
+          <TileLayer url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors, HOT" />
+        </LayersControl.BaseLayer>
+      </LayersControl>
+      <ScaleControl position="bottomleft" />
+      <FitBounds markers={markers} paths={(paths ?? path) as any} />
       {markers.map(m => (
         <Marker key={m.id} position={m.position}>
           <Popup>
