@@ -60,6 +60,17 @@ const BASE_HOTELS: Hotel[] = [
 
 const USER_PLACES_KEY = "tour.userPlaces";
 
+const STATE_HOTELS: Hotel[] = Object.entries(STATE_CITIES).flatMap(([state, cities]) =>
+  cities.map((c, idx) => ({
+    id: `st-${state}-${idx}`,
+    name: `${c.name} Residency`,
+    city: c.name,
+    stars: ((idx % 3) + 3) as 3 | 4 | 5,
+    price: 3500 + (idx % 3) * 1500,
+    position: [c.center[0] + 0.02, c.center[1] + 0.02] as [number, number],
+  }))
+);
+
 function hotelsFromPlaces(): Hotel[] {
   const places = loadJSON<any[]>(USER_PLACES_KEY, []);
   const list: Hotel[] = [];
@@ -73,17 +84,17 @@ function hotelsFromPlaces(): Hotel[] {
 
 export default function Hotels(){
   const { toast } = useToast();
-  const [region, setRegion] = useState<string>("North");
+  const [stateName, setStateName] = useState<string>("Andhra Pradesh");
   const [city, setCity] = useState<string>("all");
   const [stars, setStars] = useState<string>("any");
   const [minPrice, setMinPrice] = useState(2000);
   const [maxPrice, setMaxPrice] = useState(12000);
 
-  const allHotels = useMemo(() => [...BASE_HOTELS, ...hotelsFromPlaces()], []);
+  const allHotels = useMemo(() => [...BASE_HOTELS, ...STATE_HOTELS, ...hotelsFromPlaces()], []);
 
   const cityCenter = useMemo(() => {
     if (city === "all") return [20.5937, 78.9629] as [number, number];
-    const list = Object.values(CITIES).flat();
+    const list = Object.values(STATE_CITIES).flat();
     return list.find(c => c.name === city)?.center || [20.5937, 78.9629];
   }, [city]);
 
@@ -109,11 +120,11 @@ export default function Hotels(){
           <CardContent className="grid grid-cols-2 gap-4">
             <div className="col-span-2 grid grid-cols-2 gap-4">
               <div>
-                <Label>Region</Label>
-                <Select value={region} onValueChange={(v)=>{ setRegion(v); const first = CITIES[v][0]; setCity(first.name); }}>
+                <Label>State</Label>
+                <Select value={stateName} onValueChange={(v)=>{ setStateName(v); setCity("all"); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {Object.keys(CITIES).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    {Object.keys(STATE_CITIES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -123,7 +134,7 @@ export default function Hotels(){
                   <SelectTrigger><SelectValue placeholder="All Cities" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Cities</SelectItem>
-                    {CITIES[region].map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+                    {STATE_CITIES[stateName].map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
