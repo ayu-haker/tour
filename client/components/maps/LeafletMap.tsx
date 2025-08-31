@@ -35,6 +35,9 @@ export function LeafletMap({ center = [28.6139, 77.209], zoom = 11, markers = []
           </Popup>
         </Marker>
       ))}
+      {path && path.length > 1 && (
+        <Polyline positions={path as any} pathOptions={{ color: "#22c55e", weight: 4, opacity: 0.8 }} />
+      )}
       <ClickHandler onClick={onMapClick} />
     </MapContainer>
   );
