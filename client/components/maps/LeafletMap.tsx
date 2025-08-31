@@ -18,7 +18,9 @@ function ClickHandler({ onClick }: { onClick?: (lat: number, lng: number) => voi
   return null;
 }
 
-export function LeafletMap({ center = [28.6139, 77.209], zoom = 11, markers = [], onMapClick, path }: { center?: [number, number]; zoom?: number; markers?: MapMarker[]; onMapClick?: (lat: number, lng: number) => void; path?: [number, number][] }){
+type PathSpec = { points: [number, number][]; color?: string; weight?: number; opacity?: number };
+
+export function LeafletMap({ center = [28.6139, 77.209], zoom = 11, markers = [], onMapClick, path, paths }: { center?: [number, number]; zoom?: number; markers?: MapMarker[]; onMapClick?: (lat: number, lng: number) => void; path?: [number, number][]; paths?: PathSpec[] }){
   useEffect(() => {
     // Leaflet CSS already imported above; ensure container sizes via parent
   }, []);
