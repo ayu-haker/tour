@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { STATE_CITIES } from "@/data/india";
+import { Button } from "@/components/ui/button";
 
 // Generate simple sample networks for any city center
 function makeNetwork(center: [number, number]) {
