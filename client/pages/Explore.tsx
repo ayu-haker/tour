@@ -146,6 +146,11 @@ export default function Explore() {
           </Card>
         ))}
       </div>
+
+      <div className="mt-10">
+        <h2 className="text-xl font-bold mb-2">Your Saved Places</h2>
+        <LeafletMap markers={userPlaces} />
+      </div>
     </SiteLayout>
   );
 }
