@@ -6,81 +6,42 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { STATE_CITIES } from "@/data/india";
 import { Button } from "@/components/ui/button";
-
-// Generate simple sample networks for any city center
-function makeNetwork(center: [number, number]) {
-  const [lat, lng] = center;
-  const stations = [
-    { name: "Central", pos: [lat, lng] as [number, number] },
-    { name: "North", pos: [lat + 0.06, lng + 0.02] as [number, number] },
-    { name: "East", pos: [lat + 0.02, lng + 0.08] as [number, number] },
-    { name: "South", pos: [lat - 0.05, lng - 0.01] as [number, number] },
-    { name: "West", pos: [lat - 0.01, lng - 0.07] as [number, number] },
-  ];
-  return stations;
-}
-
-function haversine(a: [number, number], b: [number, number]) {
-  const toRad = (x: number) => (x * Math.PI) / 180;
-  const R = 6371;
-  const dLat = toRad(b[0] - a[0]);
-  const dLon = toRad(b[1] - a[1]);
-  const lat1 = toRad(a[0]);
-  const lat2 = toRad(b[0]);
-  const s = Math.sin(dLat/2)**2 + Math.sin(dLon/2)**2 * Math.cos(lat1) * Math.cos(lat2);
-  return 2 * R * Math.asin(Math.sqrt(s));
-}
-
-const MODES = [
-  { key: "Metro", color: "#2563eb", base: 10, perKm: 3 },
-  { key: "Bus", color: "#f59e0b", base: 7, perKm: 2 },
-  { key: "Train", color: "#22c55e", base: 20, perKm: 1.5 },
-] as const;
-
-type ModeKey = (typeof MODES)[number]["key"];
+import { fetchTransitStops } from "@/lib/overpass";
 
 export default function Transport(){
   const [stateName, setStateName] = useState<string>("Andhra Pradesh");
   const [city, setCity] = useState<string>(STATE_CITIES["Andhra Pradesh"][0].name);
-  const [active, setActive] = useState<ModeKey[]>(MODES.map(m=>m.key));
+  const [filters, setFilters] = useState({ bus: true, metro: true, train: true });
+  const [loading, setLoading] = useState(false);
+  const [stops, setStops] = useState<any[]>([]);
 
   const center = useMemo(() => {
     const all = Object.values(STATE_CITIES).flat();
     return (all.find((c)=>c.name===city)?.center || [20.5937, 78.9629]) as [number, number];
   }, [city]);
 
-  const networks = useMemo(() => {
-    const base = makeNetwork(center);
-    return MODES.reduce((acc, m, i) => {
-      // shift slightly per mode to avoid exact overlap
-      const shift = 0.01 * i;
-      const stations = base.map(s => ({ name: s.name, pos: [s.pos[0] + shift, s.pos[1] - shift] as [number, number] }));
-      const points = stations.map(s => s.pos);
-      const dist = points.slice(1).reduce((d, p, idx) => d + haversine(points[idx], p), 0);
-      const fare = Math.round((m.base + m.perKm * dist) * 1.05);
-      acc[m.key] = { stations, points, fare, color: m.color } as any;
-      return acc;
-    }, {} as Record<ModeKey, { stations: {name:string,pos:[number,number]}[]; points: [number,number][]; fare: number; color: string }>);
-  }, [center]);
+  async function load(){
+    setLoading(true);
+    try {
+      const data = await fetchTransitStops(center, 8, filters);
+      setStops(data);
+    } finally { setLoading(false); }
+  }
 
-  const markers: MapMarker[] = useMemo(() => {
-    const list: MapMarker[] = [];
-    for (const m of MODES) {
-      if (!active.includes(m.key)) continue;
-      for (const [i, s] of networks[m.key].stations.entries()) {
-        list.push({ id: `${m.key}-${i}`, position: s.pos, title: `${m.key}: ${s.name}`, description: `from ₹${networks[m.key].fare}` });
-      }
-    }
-    return list;
-  }, [networks, active]);
+  useMemo(() => { load(); /* reload when city or filters change */ }, [city, filters.bus, filters.metro, filters.train]);
 
-  const paths = useMemo(() => active.map(k => ({ points: networks[k].points, color: networks[k].color })), [networks, active]);
+  const markers: MapMarker[] = stops.map((s) => ({
+    id: s.id + "",
+    position: [s.lat, s.lon],
+    title: s.tags?.name || (s.tags?.railway || s.tags?.highway || "Stop"),
+    description: [s.tags?.railway, s.tags?.highway, s.tags?.public_transport].filter(Boolean).join(" • "),
+  }));
 
   return (
     <SiteLayout>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Public Transport (All States)</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Public Transport (Live OSM)</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <div>
               <Label>State</Label>
@@ -105,17 +66,16 @@ export default function Transport(){
               </Select>
             </div>
             <div className="col-span-2 flex flex-wrap gap-2">
-              {MODES.map((m)=> (
-                <Button key={m.key} variant={active.includes(m.key) ? "default" : "outline"} style={{ backgroundColor: active.includes(m.key) ? m.color : undefined }} onClick={()=> setActive(a => a.includes(m.key) ? a.filter(x=>x!==m.key) : [...a, m.key])}>
-                  {m.key} • from ₹{networks[m.key].fare}
-                </Button>
-              ))}
+              <Button variant={filters.bus ? "default" : "outline"} onClick={()=>setFilters(f=>({...f, bus: !f.bus}))}>Bus</Button>
+              <Button variant={filters.metro ? "default" : "outline"} onClick={()=>setFilters(f=>({...f, metro: !f.metro}))}>Metro</Button>
+              <Button variant={filters.train ? "default" : "outline"} onClick={()=>setFilters(f=>({...f, train: !f.train}))}>Train</Button>
+              <Button variant="secondary" onClick={load} disabled={loading}>{loading ? "Loading..." : "Refresh"}</Button>
             </div>
-            <div className="col-span-2 text-sm text-muted-foreground">All selected modes are overlaid together with sample fares.</div>
+            <div className="col-span-2 text-sm text-muted-foreground">Data fetched live from OpenStreetMap (Overpass). Toggle modes to filter stops.</div>
           </CardContent>
         </Card>
 
-        <LeafletMap center={center} markers={markers} paths={paths as any} className="h-[70vh] w-full" />
+        <LeafletMap center={center} markers={markers} className="h-[70vh] w-full" />
       </div>
     </SiteLayout>
   );
