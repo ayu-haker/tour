@@ -11,19 +11,26 @@ export default function Index() {
     <SiteLayout>
       <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-b from-indigo-50 to-transparent p-8 md:p-12">
         <BackgroundCanvas />
-        <div className="relative z-10 max-w-3xl">
-          <p className="text-sm font-semibold tracking-wider text-indigo-600 uppercase">Your travel command center</p>
-          <h1 className="mt-3 text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
-            Welcome to <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">TOUR</span>
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Explore destinations, plan budgets, book hotels and rides, order food, and more — all in one place.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg" asChild>
-              <Link to="/explore">Explore Destinations</Link>
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/budget')}>Plan Your Budget</Button>
+        <div className="relative z-10">
+          <div className="flex gap-5 max-lg:flex-col">
+            <div className="w-1/2 max-lg:w-full">
+              <div className="max-w-3xl">
+                <p className="text-[14px] leading-5 tracking-[0.7px] font-semibold text-indigo-600 uppercase">Your travel command center</p>
+                <h1 className="mt-3 text-[60px] leading-[60px] font-extrabold tracking-[-0.015em]">
+                  Welcome to <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-extrabold">TOUR</span>
+                </h1>
+                <p className="mt-4 text-[18px] leading-7 text-muted-foreground">
+                  Explore destinations, plan budgets, book hotels and rides, order food, and more — all in one place.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button size="lg" asChild>
+                    <Link to="/explore">Explore Destinations</Link>
+                  </Button>
+                  <Button size="lg" variant="outline" onClick={() => navigate('/budget')}>Plan Your Budget</Button>
+                </div>
+              </div>
+            </div>
+            <div className="w-1/2 ml-5 max-lg:w-full max-lg:ml-0" />
           </div>
         </div>
       </section>
