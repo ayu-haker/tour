@@ -115,7 +115,7 @@ export default function Transport(){
           </CardContent>
         </Card>
 
-        <LeafletMap center={center} markers={markers} paths={paths as any} />
+        <LeafletMap center={center} markers={markers} paths={paths as any} className="h-[70vh] w-full" />
       </div>
     </SiteLayout>
   );
