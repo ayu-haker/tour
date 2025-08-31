@@ -67,6 +67,34 @@ export default function Explore() {
   return (
     <SiteLayout>
       <div className="flex items-end flex-wrap gap-3">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button>Add Tourist Place</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Add Tourist Place</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="t">Title</Label>
+                  <Input id="t" value={placeTitle} onChange={(e)=>setPlaceTitle(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="d">Description</Label>
+                  <Input id="d" value={placeDesc} onChange={(e)=>setPlaceDesc(e.target.value)} />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">Click on the map to set the location.</p>
+              <LeafletMap onMapClick={(lat,lng)=>setTempPos([lat,lng])} markers={tempPos ? [{ id:"temp", position: tempPos, title: placeTitle, description: placeDesc }] : []} />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={()=>setOpen(false)}>Cancel</Button>
+                <Button onClick={addPlace}>Save</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         <div className="flex-1 min-w-60">
           <label className="block text-sm font-medium mb-1">Search</label>
           <Input placeholder="City or country" value={q} onChange={(e) => setQ(e.target.value)} />
