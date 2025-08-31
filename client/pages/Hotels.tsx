@@ -110,8 +110,9 @@ export default function Hotels(){
               <div>
                 <Label>City</Label>
                 <Select value={city} onValueChange={setCity}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="All Cities" /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">All Cities</SelectItem>
                     {CITIES[region].map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
