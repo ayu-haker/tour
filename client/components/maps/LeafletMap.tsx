@@ -37,7 +37,12 @@ export function LeafletMap({ center = [28.6139, 77.209], zoom = 11, markers = []
           </Popup>
         </Marker>
       ))}
-      {path && path.length > 1 && (
+      {paths && paths.map((p, i) => (
+        p.points.length > 1 ? (
+          <Polyline key={i} positions={p.points as any} pathOptions={{ color: p.color || "#22c55e", weight: p.weight || 4, opacity: p.opacity ?? 0.8 }} />
+        ) : null
+      ))}
+      {!paths && path && path.length > 1 && (
         <Polyline positions={path as any} pathOptions={{ color: "#22c55e", weight: 4, opacity: 0.8 }} />
       )}
       <ClickHandler onClick={onMapClick} />
