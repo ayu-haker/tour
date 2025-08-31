@@ -5,6 +5,7 @@ import marker2x from "leaflet/dist/images/marker-icon-2x.png";
 import marker1x from "leaflet/dist/images/marker-icon.png";
 import shadow from "leaflet/dist/images/marker-shadow.png";
 import { useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 const DefaultIcon = L.icon({ iconUrl: marker1x, iconRetinaUrl: marker2x, shadowUrl: shadow, iconSize: [25,41], iconAnchor: [12,41] });
 L.Marker.prototype.options.icon = DefaultIcon;
