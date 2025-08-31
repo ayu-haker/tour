@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { loadJSON } from "@/lib/storage";
+import { STATE_CITIES } from "@/data/india";
 
 // See shared dataset in @/data/india
 
