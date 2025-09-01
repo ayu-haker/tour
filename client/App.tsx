@@ -45,8 +45,8 @@ const App = () => (
             <Route path="/transport" element={<Transport />} />
             <Route path="/spots" element={<Spots />} />
             <Route path="/emergency" element={<Emergency />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/memories" element={<Memories />} />
+            <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="/memories" element={<RequireAuth><Memories /></RequireAuth>} />
             <Route path="/support" element={<Support />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
