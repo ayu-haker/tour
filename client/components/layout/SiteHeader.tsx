@@ -13,6 +13,7 @@ const nav = [
   { to: "/spots", label: "Tourist Spots" },
   { to: "/budget", label: "Budget Planner" },
   { to: "/memories", label: "Memories" },
+  { to: "/partner", label: "Partner" },
   { to: "/emergency", label: "Emergency" },
   { to: "/profile", label: "Profile" },
 ];
