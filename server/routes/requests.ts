@@ -26,8 +26,10 @@ function tableUrl(table: string) {
 router.get("/", async (req, res) => {
   try {
     const type = (req.query.type as string) || undefined;
+    const owner = (req.query.owner as string) || undefined;
     const url = new URL(tableUrl("requests"));
     if (type) url.searchParams.set("type", `eq.${type}`);
+    if (owner) url.searchParams.set("owner_id", `eq.${owner}`);
     url.searchParams.set("order", "created_at.desc");
     const r = await fetch(url.toString(), { headers: supabaseHeaders() });
     const data = await r.json();
