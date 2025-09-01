@@ -26,8 +26,10 @@ export default async function handler(req: Request) {
     if (req.method === 'GET') {
       const { searchParams } = new URL(req.url);
       const type = searchParams.get('type') || undefined;
+      const owner = searchParams.get('owner') || undefined;
       const url = new URL(tableUrl('requests'));
       if (type) url.searchParams.set('type', `eq.${type}`);
+      if (owner) url.searchParams.set('owner_id', `eq.${owner}`);
       url.searchParams.set('order', 'created_at.desc');
       const r = await fetch(url.toString(), { headers: supabaseHeaders() });
       const body = await r.text();
