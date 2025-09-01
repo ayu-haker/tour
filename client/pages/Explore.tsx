@@ -81,6 +81,8 @@ export default function Explore() {
   const [revTitle, setRevTitle] = useState("");
   const [revNotes, setRevNotes] = useState("");
   const [revRating, setRevRating] = useState(0);
+  const [loginPrompt, setLoginPrompt] = useState(false);
+  const { user } = useAuth();
 
   const byPlace = useMemo(() => {
     const map: Record<string, PlaceReview[]> = {};
