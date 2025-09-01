@@ -22,6 +22,7 @@ import Support from "./pages/Support";
 import Login from "./pages/Login";
 import Memories from "./pages/Memories";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import Partner from "./pages/Partner";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
             <Route path="/memories" element={<RequireAuth><Memories /></RequireAuth>} />
             <Route path="/support" element={<Support />} />
+            <Route path="/partner" element={<RequireAuth><Partner /></RequireAuth>} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
