@@ -67,12 +67,28 @@ export default function Cabs() {
     else setDrop([lat, lng]);
   }
 
+  const [locLoading, setLocLoading] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
+
   function useLocation() {
-    if (!navigator.geolocation) return;
+    setLocError(null);
+    if (!('geolocation' in navigator)) { setLocError('Geolocation is not supported on this device.'); return; }
+    const isSecure = typeof window !== 'undefined' ? window.isSecureContext : true;
+    if (!isSecure) { setLocError('Location requires HTTPS. Open the site over https://'); return; }
+    setLocLoading(true);
     navigator.geolocation.getCurrentPosition((pos) => {
       const p: [number, number] = [pos.coords.latitude, pos.coords.longitude];
       setPickup(p);
-    });
+      if (!pickupText) setPickupText('Current location');
+      setActive('drop');
+      setLocLoading(false);
+    }, (err) => {
+      if (err.code === err.PERMISSION_DENIED) setLocError('Permission denied. Enable location access in your browser settings.');
+      else if (err.code === err.POSITION_UNAVAILABLE) setLocError('Location unavailable. Try again or check GPS.');
+      else if (err.code === err.TIMEOUT) setLocError('Timed out while getting location. Try again.');
+      else setLocError('Unable to get your location.');
+      setLocLoading(false);
+    }, { enableHighAccuracy: true, maximumAge: 60_000, timeout: 10_000 });
   }
 
   function requestRide() {
