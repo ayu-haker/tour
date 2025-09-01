@@ -129,6 +129,20 @@ export default function Cabs() {
     }, { enableHighAccuracy: true, maximumAge: 60_000, timeout: 10_000 });
   }
 
+  async function setPickupFromText(){
+    const pos = await geocodePlace(pickupText);
+    if (pos) setPickup(pos);
+  }
+  async function setDropFromText(){
+    const pos = await geocodePlace(dropText);
+    if (pos) setDrop(pos);
+  }
+
+  useEffect(() => {
+    if (pickup && drop) computeRoute(pickup, drop);
+    else setRoutePoints([]);
+  }, [pickup, drop]);
+
   function requestRide() {
     if (!pickup || !drop) return;
     setStatus("searching");
