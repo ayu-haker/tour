@@ -81,6 +81,25 @@ export default function Cabs() {
 
   const path = pickup && drop ? [pickup, drop] : undefined;
 
+  async function computeRoute(a: [number, number], b: [number, number]) {
+    setRouteError(null);
+    setRouteLoading(true);
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Routing failed");
+      const json = await res.json();
+      const coords: [number, number][] = json.routes?.[0]?.geometry?.coordinates?.map((c: [number, number]) => [c[1], c[0]]) ?? [];
+      if (coords.length > 1) setRoutePoints(coords);
+      else setRoutePoints([a, b]);
+    } catch (e) {
+      setRoutePoints(a && b ? [a, b] : []);
+      setRouteError("Could not fetch driving route. Showing straight line.");
+    } finally {
+      setRouteLoading(false);
+    }
+  }
+
   function onMapClick(lat: number, lng: number) {
     if (active === "pickup") setPickup([lat, lng]);
     else setDrop([lat, lng]);
