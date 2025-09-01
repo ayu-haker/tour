@@ -43,9 +43,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <Button asChild variant="outline">
-            <Link to="/login">Login</Link>
-          </Button>
+          <AuthButtons />
         </div>
       </div>
       <div className="md:hidden border-t bg-background">
