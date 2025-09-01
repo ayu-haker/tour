@@ -57,6 +57,10 @@ export default function Cabs() {
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
   const simRef = useRef<number | null>(null);
 
+  const [routePoints, setRoutePoints] = useState<[number, number][]>([]);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
+
   const distanceKm = useMemo(() => (pickup && drop ? haversine(pickup, drop) : 0), [pickup, drop]);
   const etaMin = useMemo(() => (distanceKm ? Math.max(6, Math.round((distanceKm / 25) * 60)) : 0), [distanceKm]);
   const estimate = useMemo(() => {
