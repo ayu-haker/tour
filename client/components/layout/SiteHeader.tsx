@@ -17,6 +17,25 @@ const nav = [
   { to: "/profile", label: "Profile" },
 ];
 
+function AuthButtons(){
+  const { user, logout } = useAuth();
+  if (!user) {
+    return (
+      <Button asChild variant="outline">
+        <Link to="/login">Login</Link>
+      </Button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <Button asChild variant="secondary">
+        <Link to="/profile">{user.email}</Link>
+      </Button>
+      <Button variant="outline" onClick={logout}>Logout</Button>
+    </div>
+  );
+}
+
 export function SiteHeader() {
   const { pathname } = useLocation();
   return (
