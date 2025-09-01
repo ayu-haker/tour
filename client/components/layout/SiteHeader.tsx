@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 const nav = [
   { to: "/", label: "Home" },
