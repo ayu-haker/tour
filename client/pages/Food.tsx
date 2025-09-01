@@ -353,16 +353,26 @@ export default function Food() {
                 onClick={async () => {
                   try {
                     const groups: Record<string, typeof cart> = {};
-                    for (const item of cart) { (groups[item.restId] ||= []).push(item); }
+                    for (const item of cart) {
+                      (groups[item.restId] ||= []).push(item);
+                    }
                     for (const [restId, items] of Object.entries(groups)) {
-                      const subtotal = items.reduce((s,i)=>s + i.price*i.qty, 0);
+                      const subtotal = items.reduce(
+                        (s, i) => s + i.price * i.qty,
+                        0,
+                      );
                       await fetch("/api/requests", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                           type: "food",
                           owner_id: restId,
-                          payload: { restId, restName: items[0]?.restName, items, total: subtotal },
+                          payload: {
+                            restId,
+                            restName: items[0]?.restName,
+                            items,
+                            total: subtotal,
+                          },
                         }),
                       });
                     }

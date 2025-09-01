@@ -15,9 +15,11 @@ type Req = {
 
 async function fetchRequests(type?: string, owner?: string): Promise<Req[]> {
   const q = new URLSearchParams();
-  if (type) q.set('type', type);
-  if (owner) q.set('owner', owner);
-  const r = await fetch(`/api/requests${q.toString() ? `?${q.toString()}` : ''}`);
+  if (type) q.set("type", type);
+  if (owner) q.set("owner", owner);
+  const r = await fetch(
+    `/api/requests${q.toString() ? `?${q.toString()}` : ""}`,
+  );
   if (!r.ok) throw new Error("failed");
   return await r.json();
 }
@@ -36,7 +38,9 @@ export default function Partner() {
   const [items, setItems] = useState<Req[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [biz, setBiz] = useState<string>(() => localStorage.getItem('partner.businessId') || '');
+  const [biz, setBiz] = useState<string>(
+    () => localStorage.getItem("partner.businessId") || "",
+  );
 
   async function load() {
     try {
@@ -64,8 +68,18 @@ export default function Partner() {
           <CardTitle>Partner Dashboard</CardTitle>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
             <label className="text-muted-foreground">Business ID</label>
-            <input value={biz} onChange={(e)=>{ setBiz(e.target.value); localStorage.setItem('partner.businessId', e.target.value); }} className="px-2 py-1 rounded border bg-background" placeholder="e.g. restaurant id or hotel id" />
-            <span className="text-xs text-muted-foreground">Shows only requests with owner_id = Business ID.</span>
+            <input
+              value={biz}
+              onChange={(e) => {
+                setBiz(e.target.value);
+                localStorage.setItem("partner.businessId", e.target.value);
+              }}
+              className="px-2 py-1 rounded border bg-background"
+              placeholder="e.g. restaurant id or hotel id"
+            />
+            <span className="text-xs text-muted-foreground">
+              Shows only requests with owner_id = Business ID.
+            </span>
           </div>
         </CardHeader>
         <CardContent>
