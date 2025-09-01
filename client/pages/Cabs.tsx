@@ -143,13 +143,16 @@ export default function Cabs() {
     else setRoutePoints([]);
   }, [pickup, drop]);
 
-  function requestRide() {
+  async function requestRide() {
     if (!pickup || !drop) return;
     setStatus("searching");
+    // Create backend record
+    try {
+      await fetch('/api/requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'cab', payload: { pickup, drop, category, estimate, highDemand } }) });
+    } catch {}
     setTimeout(() => {
       setStatus("driver");
       setDriverPos(pickup);
-      // Simulate movement
       const steps = 100;
       let i = 0;
       const start = pickup;
