@@ -90,7 +90,7 @@ export default function CameraCapture({ onCapture }: { onCapture: (dataUrl: stri
       )}
 
       <div className={stream ? "block" : "hidden"}>
-        <video ref={videoRef} autoPlay playsInline muted className="w-full rounded-md border" />
+        <video ref={videoRef} autoPlay playsInline muted className="w-full max-h-[60vh] object-contain rounded-md border" />
         <div className="mt-2 flex items-center gap-2">
           <Button type="button" onClick={capture}>Capture</Button>
           <Button type="button" variant="outline" onClick={requestAccess}>Retry</Button>
