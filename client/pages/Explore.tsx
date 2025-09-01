@@ -304,6 +304,22 @@ export default function Explore() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Login Required Dialog */}
+      <Dialog open={loginPrompt} onOpenChange={setLoginPrompt}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Login required</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">You must be logged in to add a review. Please login to continue.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={()=>setLoginPrompt(false)}>Close</Button>
+            <Button asChild>
+              <Link to="/login">Login</Link>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </SiteLayout>
   );
 }
