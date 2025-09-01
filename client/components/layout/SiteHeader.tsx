@@ -11,6 +11,7 @@ const nav = [
   { to: "/transport", label: "Transport" },
   { to: "/spots", label: "Tourist Spots" },
   { to: "/budget", label: "Budget Planner" },
+  { to: "/memories", label: "Memories" },
   { to: "/emergency", label: "Emergency" },
   { to: "/profile", label: "Profile" },
 ];
