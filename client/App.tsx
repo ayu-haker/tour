@@ -80,4 +80,23 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+const container = document.getElementById("root")!;
+// Reuse existing root across HMR to avoid duplicate createRoot warnings
+// Store on container to avoid leaking globals
+// @ts-expect-error custom property
+let root = container._reactRoot as ReturnType<typeof createRoot> | undefined;
+if (!root) {
+  root = createRoot(container);
+  // @ts-expect-error custom property
+  container._reactRoot = root;
+}
+root.render(<App />);
+
+if (import.meta && import.meta.hot) {
+  import.meta.hot.accept?.();
+  import.meta.hot.dispose?.(() => {
+    try {
+      root?.unmount();
+    } catch {}
+  });
+}
