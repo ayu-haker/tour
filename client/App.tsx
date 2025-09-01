@@ -20,6 +20,7 @@ import Emergency from "./pages/Emergency";
 import Profile from "./pages/Profile";
 import Support from "./pages/Support";
 import Login from "./pages/Login";
+import Memories from "./pages/Memories";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/spots" element={<Spots />} />
             <Route path="/emergency" element={<Emergency />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/memories" element={<Memories />} />
             <Route path="/support" element={<Support />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
