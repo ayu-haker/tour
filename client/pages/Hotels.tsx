@@ -211,6 +211,7 @@ export default function Hotels() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: "hotel",
+          owner_id: h.id,
           payload: {
             id: h.id,
             name: h.name,
