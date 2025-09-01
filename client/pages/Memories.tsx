@@ -93,7 +93,7 @@ export default function Memories(){
           <DialogTrigger asChild>
             <Button>Open Camera</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl">
+          <DialogContent className="max-w-full sm:max-w-xl max-h-[85vh] overflow-auto">
             <DialogHeader>
               <DialogTitle>Capture a Memory</DialogTitle>
             </DialogHeader>
@@ -131,7 +131,7 @@ export default function Memories(){
       )}
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-full sm:max-w-xl max-h-[85vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>Save Memory</DialogTitle>
           </DialogHeader>
@@ -160,7 +160,7 @@ export default function Memories(){
       </Dialog>
 
       <Dialog open={!!preview} onOpenChange={(o)=>!o && setPreview(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-full sm:max-w-2xl max-h-[85vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>{preview?.title ?? "Memory"}</DialogTitle>
           </DialogHeader>
