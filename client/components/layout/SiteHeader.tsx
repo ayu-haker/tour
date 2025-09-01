@@ -72,7 +72,7 @@ export function SiteHeader() {
               key={n.to}
               to={n.to}
               className={cn(
-                "inline-block px-3 py-2 text-sm rounded-md mr-2 border",
+                "inline-block px-4 py-3 text-base rounded-md mr-2 border",
                 pathname === n.to ? "bg-accent" : "bg-card"
               )}
             >
