@@ -30,6 +30,21 @@ function haversine(a: [number, number], b: [number, number]) {
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
+async function geocodePlace(query: string): Promise<[number, number] | null> {
+  const q = query.trim();
+  if (!q) return null;
+  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) return null;
+  const item = data[0];
+  const lat = parseFloat(item.lat);
+  const lon = parseFloat(item.lon);
+  if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+  return null;
+}
+
 export default function Cabs() {
   const [pickup, setPickup] = useState<[number, number] | null>(null);
   const [drop, setDrop] = useState<[number, number] | null>(null);
