@@ -2,22 +2,22 @@ import { Router } from "express";
 
 const router = Router();
 
-function env(key: string){
+function env(key: string) {
   const v = process.env[key];
   if (!v) throw new Error(`Missing env: ${key}`);
   return v;
 }
 
-function supabaseHeaders(){
+function supabaseHeaders() {
   return {
-    "apikey": env("SUPABASE_ANON_KEY"),
-    "Authorization": `Bearer ${env("SUPABASE_ANON_KEY")}`,
+    apikey: env("SUPABASE_ANON_KEY"),
+    Authorization: `Bearer ${env("SUPABASE_ANON_KEY")}`,
     "Content-Type": "application/json",
-    "Prefer": "return=representation",
-  } as Record<string,string>;
+    Prefer: "return=representation",
+  } as Record<string, string>;
 }
 
-function tableUrl(table: string){
+function tableUrl(table: string) {
   const base = env("SUPABASE_URL");
   return `${base}/rest/v1/${table}`;
 }
@@ -41,11 +41,19 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const body = req.body || {};
-    if (!body.type || !body.payload) return res.status(400).json({ error: "type and payload are required" });
+    if (!body.type || !body.payload)
+      return res.status(400).json({ error: "type and payload are required" });
     const r = await fetch(tableUrl("requests"), {
       method: "POST",
       headers: supabaseHeaders(),
-      body: JSON.stringify([{ type: String(body.type), status: body.status || "new", payload: body.payload, owner_id: body.owner_id ?? null }]),
+      body: JSON.stringify([
+        {
+          type: String(body.type),
+          status: body.status || "new",
+          payload: body.payload,
+          owner_id: body.owner_id ?? null,
+        },
+      ]),
     });
     const data = await r.json();
     res.status(r.status).json(data?.[0] ?? data);
@@ -59,7 +67,8 @@ router.patch("/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const { status } = req.body || {};
-    if (!id || !status) return res.status(400).json({ error: "id and status are required" });
+    if (!id || !status)
+      return res.status(400).json({ error: "id and status are required" });
     const url = new URL(tableUrl("requests"));
     url.searchParams.set("id", `eq.${id}`);
     const r = await fetch(url.toString(), {

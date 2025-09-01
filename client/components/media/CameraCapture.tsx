@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export default function CameraCapture({ onCapture }: { onCapture: (dataUrl: string) => void }){
+export default function CameraCapture({
+  onCapture,
+}: {
+  onCapture: (dataUrl: string) => void;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,9 +31,16 @@ export default function CameraCapture({ onCapture }: { onCapture: (dataUrl: stri
       if (videoRef.current) videoRef.current.srcObject = s;
     } catch (e: any) {
       const name = e?.name || "Error";
-      if (name === "NotAllowedError") setError("Camera permission denied or dismissed. Enable camera access in your browser settings and retry.");
-      else if (name === "NotFoundError") setError("No camera found on this device.");
-      else if (name === "NotReadableError") setError("Camera is in use by another application. Close it and try again.");
+      if (name === "NotAllowedError")
+        setError(
+          "Camera permission denied or dismissed. Enable camera access in your browser settings and retry.",
+        );
+      else if (name === "NotFoundError")
+        setError("No camera found on this device.");
+      else if (name === "NotReadableError")
+        setError(
+          "Camera is in use by another application. Close it and try again.",
+        );
       else setError("Unable to access camera.");
       stopStream();
       console.error(e);
@@ -44,18 +55,19 @@ export default function CameraCapture({ onCapture }: { onCapture: (dataUrl: stri
     };
   }, [stopStream]);
 
-  function capture(){
+  function capture() {
     const video = videoRef.current;
     if (!video) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 1280; canvas.height = video.videoHeight || 720;
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(video, 0, 0);
-    onCapture(canvas.toDataURL('image/jpeg', 0.9));
+    onCapture(canvas.toDataURL("image/jpeg", 0.9));
   }
 
-  async function onPickFile(e: React.ChangeEvent<HTMLInputElement>){
+  async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -67,22 +79,33 @@ export default function CameraCapture({ onCapture }: { onCapture: (dataUrl: stri
     e.target.value = "";
   }
 
-  const isSecure = typeof window !== 'undefined' ? window.isSecureContext : true;
+  const isSecure =
+    typeof window !== "undefined" ? window.isSecureContext : true;
 
   return (
     <div className="space-y-3">
       {!stream && (
         <div className="space-y-2">
           {!isSecure && (
-            <p className="text-sm text-amber-600">Open over HTTPS to use the camera, or upload a photo instead.</p>
+            <p className="text-sm text-amber-600">
+              Open over HTTPS to use the camera, or upload a photo instead.
+            </p>
           )}
           <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={requestAccess} disabled={requesting}>
               {requesting ? "Requesting…" : "Enable Camera"}
             </Button>
             <label className="inline-flex">
-              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onPickFile} />
-              <Button type="button" variant="outline">Upload Photo</Button>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={onPickFile}
+              />
+              <Button type="button" variant="outline">
+                Upload Photo
+              </Button>
             </label>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -90,11 +113,23 @@ export default function CameraCapture({ onCapture }: { onCapture: (dataUrl: stri
       )}
 
       <div className={stream ? "block" : "hidden"}>
-        <video ref={videoRef} autoPlay playsInline muted className="w-full max-h-[60vh] object-contain rounded-md border" />
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full max-h-[60vh] object-contain rounded-md border"
+        />
         <div className="mt-2 flex items-center gap-2">
-          <Button type="button" onClick={capture}>Capture</Button>
-          <Button type="button" variant="outline" onClick={requestAccess}>Retry</Button>
-          <Button type="button" variant="ghost" onClick={stopStream}>Stop</Button>
+          <Button type="button" onClick={capture}>
+            Capture
+          </Button>
+          <Button type="button" variant="outline" onClick={requestAccess}>
+            Retry
+          </Button>
+          <Button type="button" variant="ghost" onClick={stopStream}>
+            Stop
+          </Button>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
       </div>

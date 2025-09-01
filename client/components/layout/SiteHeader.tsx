@@ -18,7 +18,7 @@ const nav = [
   { to: "/profile", label: "Profile" },
 ];
 
-function AuthButtons(){
+function AuthButtons() {
   const { user, logout } = useAuth();
   if (!user) {
     return (
@@ -32,7 +32,9 @@ function AuthButtons(){
       <Button asChild variant="secondary">
         <Link to="/profile">{user.email}</Link>
       </Button>
-      <Button variant="outline" onClick={logout}>Logout</Button>
+      <Button variant="outline" onClick={logout}>
+        Logout
+      </Button>
     </div>
   );
 }
@@ -43,7 +45,9 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-16 items-center gap-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 grid place-items-center text-white font-bold">🏞️</div>
+          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 grid place-items-center text-white font-bold">
+            🏞️
+          </div>
           <span className="font-extrabold text-xl tracking-tight">TOUR</span>
         </Link>
         <nav className="hidden md:flex items-center gap-1 ml-6">
@@ -54,7 +58,7 @@ export function SiteHeader() {
               className={({ isActive }) =>
                 cn(
                   "px-3 py-2 rounded-md text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent",
-                  isActive && "bg-accent text-foreground"
+                  isActive && "bg-accent text-foreground",
                 )
               }
             >
@@ -74,7 +78,7 @@ export function SiteHeader() {
               to={n.to}
               className={cn(
                 "inline-block px-4 py-3 text-base rounded-md mr-2 border",
-                pathname === n.to ? "bg-accent" : "bg-card"
+                pathname === n.to ? "bg-accent" : "bg-card",
               )}
             >
               {n.label}

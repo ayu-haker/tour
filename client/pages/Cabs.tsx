@@ -53,7 +53,9 @@ export default function Cabs() {
   const [highDemand, setHighDemand] = useState(false);
   const [pickupText, setPickupText] = useState("");
   const [dropText, setDropText] = useState("");
-  const [status, setStatus] = useState<"idle" | "searching" | "driver" | "ongoing">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "searching" | "driver" | "ongoing"
+  >("idle");
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
   const simRef = useRef<number | null>(null);
 
@@ -61,8 +63,14 @@ export default function Cabs() {
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
 
-  const distanceKm = useMemo(() => (pickup && drop ? haversine(pickup, drop) : 0), [pickup, drop]);
-  const etaMin = useMemo(() => (distanceKm ? Math.max(6, Math.round((distanceKm / 25) * 60)) : 0), [distanceKm]);
+  const distanceKm = useMemo(
+    () => (pickup && drop ? haversine(pickup, drop) : 0),
+    [pickup, drop],
+  );
+  const etaMin = useMemo(
+    () => (distanceKm ? Math.max(6, Math.round((distanceKm / 25) * 60)) : 0),
+    [distanceKm],
+  );
   const estimate = useMemo(() => {
     const { base, perKm } = PRICING[category];
     const surge = highDemand ? 1.5 : 1;
@@ -73,9 +81,20 @@ export default function Cabs() {
 
   const markers: MapMarker[] = useMemo(() => {
     const list: MapMarker[] = [];
-    if (pickup) list.push({ id: "pickup", position: pickup, title: `Pickup${pickupText ? ": " + pickupText : ""}` });
-    if (drop) list.push({ id: "drop", position: drop, title: `Drop${dropText ? ": " + dropText : ""}` });
-    if (driverPos) list.push({ id: "driver", position: driverPos, title: "Driver" });
+    if (pickup)
+      list.push({
+        id: "pickup",
+        position: pickup,
+        title: `Pickup${pickupText ? ": " + pickupText : ""}`,
+      });
+    if (drop)
+      list.push({
+        id: "drop",
+        position: drop,
+        title: `Drop${dropText ? ": " + dropText : ""}`,
+      });
+    if (driverPos)
+      list.push({ id: "driver", position: driverPos, title: "Driver" });
     return list;
   }, [pickup, drop, pickupText, dropText, driverPos]);
 
@@ -89,7 +108,11 @@ export default function Cabs() {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Routing failed");
       const json = await res.json();
-      const coords: [number, number][] = json.routes?.[0]?.geometry?.coordinates?.map((c: [number, number]) => [c[1], c[0]]) ?? [];
+      const coords: [number, number][] =
+        json.routes?.[0]?.geometry?.coordinates?.map((c: [number, number]) => [
+          c[1],
+          c[0],
+        ]) ?? [];
       if (coords.length > 1) setRoutePoints(coords);
       else setRoutePoints([a, b]);
     } catch (e) {
@@ -110,30 +133,46 @@ export default function Cabs() {
 
   function useLocation() {
     setLocError(null);
-    if (!('geolocation' in navigator)) { setLocError('Geolocation is not supported on this device.'); return; }
-    const isSecure = typeof window !== 'undefined' ? window.isSecureContext : true;
-    if (!isSecure) { setLocError('Location requires HTTPS. Open the site over https://'); return; }
+    if (!("geolocation" in navigator)) {
+      setLocError("Geolocation is not supported on this device.");
+      return;
+    }
+    const isSecure =
+      typeof window !== "undefined" ? window.isSecureContext : true;
+    if (!isSecure) {
+      setLocError("Location requires HTTPS. Open the site over https://");
+      return;
+    }
     setLocLoading(true);
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const p: [number, number] = [pos.coords.latitude, pos.coords.longitude];
-      setPickup(p);
-      if (!pickupText) setPickupText('Current location');
-      setActive('drop');
-      setLocLoading(false);
-    }, (err) => {
-      if (err.code === err.PERMISSION_DENIED) setLocError('Permission denied. Enable location access in your browser settings.');
-      else if (err.code === err.POSITION_UNAVAILABLE) setLocError('Location unavailable. Try again or check GPS.');
-      else if (err.code === err.TIMEOUT) setLocError('Timed out while getting location. Try again.');
-      else setLocError('Unable to get your location.');
-      setLocLoading(false);
-    }, { enableHighAccuracy: true, maximumAge: 60_000, timeout: 10_000 });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const p: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        setPickup(p);
+        if (!pickupText) setPickupText("Current location");
+        setActive("drop");
+        setLocLoading(false);
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED)
+          setLocError(
+            "Permission denied. Enable location access in your browser settings.",
+          );
+        else if (err.code === err.POSITION_UNAVAILABLE)
+          setLocError("Location unavailable. Try again or check GPS.");
+        else if (err.code === err.TIMEOUT)
+          setLocError("Timed out while getting location. Try again.");
+        else setLocError("Unable to get your location.");
+        setLocLoading(false);
+      },
+      { enableHighAccuracy: true, maximumAge: 60_000, timeout: 10_000 },
+    );
   }
 
-  async function setPickupFromText(){
+  async function setPickupFromText() {
     const pos = await geocodePlace(pickupText);
     if (pos) setPickup(pos);
   }
-  async function setDropFromText(){
+  async function setDropFromText() {
     const pos = await geocodePlace(dropText);
     if (pos) setDrop(pos);
   }
@@ -148,7 +187,14 @@ export default function Cabs() {
     setStatus("searching");
     // Create backend record
     try {
-      await fetch('/api/requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'cab', payload: { pickup, drop, category, estimate, highDemand } }) });
+      await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "cab",
+          payload: { pickup, drop, category, estimate, highDemand },
+        }),
+      });
     } catch {}
     setTimeout(() => {
       setStatus("driver");
@@ -171,52 +217,115 @@ export default function Cabs() {
     }, 1200);
   }
 
-  useEffect(() => () => { if (simRef.current) window.clearInterval(simRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (simRef.current) window.clearInterval(simRef.current);
+    },
+    [],
+  );
 
   return (
     <SiteLayout>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Cab Booking</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Cab Booking</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3">
               <div>
                 <Label>Pickup</Label>
                 <div className="flex gap-2">
-                  <Input placeholder="Set on map or type" value={pickupText} onChange={(e)=>setPickupText(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter') setPickupFromText(); }} />
-                  <Button type="button" variant="outline" onClick={()=>{ setActive("pickup"); }}>Set on map</Button>
-                  <Button type="button" variant="secondary" onClick={useLocation} disabled={locLoading}>
+                  <Input
+                    placeholder="Set on map or type"
+                    value={pickupText}
+                    onChange={(e) => setPickupText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") setPickupFromText();
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setActive("pickup");
+                    }}
+                  >
+                    Set on map
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={useLocation}
+                    disabled={locLoading}
+                  >
                     {locLoading ? "Locating…" : "Use my location"}
                   </Button>
-                  <Button type="button" onClick={setPickupFromText}>Set</Button>
+                  <Button type="button" onClick={setPickupFromText}>
+                    Set
+                  </Button>
                 </div>
-                {locError && <p className="mt-1 text-xs text-red-600">{locError}</p>}
+                {locError && (
+                  <p className="mt-1 text-xs text-red-600">{locError}</p>
+                )}
               </div>
               <div>
                 <Label>Drop</Label>
                 <div className="flex gap-2">
-                  <Input placeholder="Set on map or type" value={dropText} onChange={(e)=>setDropText(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter') setDropFromText(); }} />
-                  <Button type="button" variant="outline" onClick={()=>{ setActive("drop"); }}>Set on map</Button>
-                  <Button type="button" onClick={setDropFromText}>Set</Button>
+                  <Input
+                    placeholder="Set on map or type"
+                    value={dropText}
+                    onChange={(e) => setDropText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") setDropFromText();
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setActive("drop");
+                    }}
+                  >
+                    Set on map
+                  </Button>
+                  <Button type="button" onClick={setDropFromText}>
+                    Set
+                  </Button>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
               {(Object.keys(PRICING) as Category[]).map((c) => (
-                <Button key={c} variant={category === c ? "default" : "outline"} onClick={()=>setCategory(c)}>{c}</Button>
+                <Button
+                  key={c}
+                  variant={category === c ? "default" : "outline"}
+                  onClick={() => setCategory(c)}
+                >
+                  {c}
+                </Button>
               ))}
-              <Button variant={highDemand ? "destructive" : "outline"} onClick={()=>setHighDemand(v=>!v)}>{highDemand ? "High demand (ON)" : "High demand"}</Button>
+              <Button
+                variant={highDemand ? "destructive" : "outline"}
+                onClick={() => setHighDemand((v) => !v)}
+              >
+                {highDemand ? "High demand (ON)" : "High demand"}
+              </Button>
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div className="rounded-md border p-3">
                 <div className="text-muted-foreground">Distance</div>
-                <div className="font-semibold">{distanceKm ? distanceKm.toFixed(2) : "-"} km</div>
+                <div className="font-semibold">
+                  {distanceKm ? distanceKm.toFixed(2) : "-"} km
+                </div>
               </div>
               <div className="rounded-md border p-3">
                 <div className="text-muted-foreground">ETA</div>
-                <div className="font-semibold">{etaMin ? `${etaMin} min` : "-"}</div>
+                <div className="font-semibold">
+                  {etaMin ? `${etaMin} min` : "-"}
+                </div>
               </div>
               <div className="rounded-md border p-3">
                 <div className="text-muted-foreground">Est. Fare</div>
@@ -224,12 +333,26 @@ export default function Cabs() {
               </div>
             </div>
 
-            {routeLoading && <p className="text-xs text-muted-foreground">Calculating route…</p>}
-            {routeError && <p className="text-xs text-amber-600">{routeError}</p>}
+            {routeLoading && (
+              <p className="text-xs text-muted-foreground">
+                Calculating route…
+              </p>
+            )}
+            {routeError && (
+              <p className="text-xs text-amber-600">{routeError}</p>
+            )}
 
             <div className="flex justify-end">
-              <Button size="lg" onClick={requestRide} disabled={!pickup || !drop || status === "searching"}>
-                {status === "searching" ? "Searching..." : status === "driver" ? "Driver on the way" : "Request Ride"}
+              <Button
+                size="lg"
+                onClick={requestRide}
+                disabled={!pickup || !drop || status === "searching"}
+              >
+                {status === "searching"
+                  ? "Searching..."
+                  : status === "driver"
+                    ? "Driver on the way"
+                    : "Request Ride"}
               </Button>
             </div>
           </CardContent>
@@ -240,7 +363,11 @@ export default function Cabs() {
             center={(pickup || drop || INDIA_CENTER) as [number, number]}
             markers={markers}
             onMapClick={onMapClick}
-            paths={routePoints.length > 1 ? [{ points: routePoints, color: "#3b82f6", weight: 5 }] : undefined}
+            paths={
+              routePoints.length > 1
+                ? [{ points: routePoints, color: "#3b82f6", weight: 5 }]
+                : undefined
+            }
             path={!routePoints.length && path ? path : undefined}
           />
         </div>
