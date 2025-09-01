@@ -21,6 +21,7 @@ import Profile from "./pages/Profile";
 import Support from "./pages/Support";
 import Login from "./pages/Login";
 import Memories from "./pages/Memories";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 const queryClient = new QueryClient();
 
