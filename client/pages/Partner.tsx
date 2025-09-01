@@ -36,12 +36,13 @@ export default function Partner() {
   const [items, setItems] = useState<Req[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [biz, setBiz] = useState<string>(() => localStorage.getItem('partner.businessId') || '');
 
   async function load() {
     try {
       setErr(null);
       setLoading(true);
-      const data = await fetchRequests(tab);
+      const data = await fetchRequests(tab, biz || undefined);
       setItems(data);
     } catch (e: any) {
       setErr(e?.message || "error");
@@ -54,13 +55,18 @@ export default function Partner() {
     load();
     const t = setInterval(load, 5000);
     return () => clearInterval(t);
-  }, [tab]);
+  }, [tab, biz]);
 
   return (
     <SiteLayout>
       <Card>
         <CardHeader>
           <CardTitle>Partner Dashboard</CardTitle>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <label className="text-muted-foreground">Business ID</label>
+            <input value={biz} onChange={(e)=>{ setBiz(e.target.value); localStorage.setItem('partner.businessId', e.target.value); }} className="px-2 py-1 rounded border bg-background" placeholder="e.g. restaurant id or hotel id" />
+            <span className="text-xs text-muted-foreground">Shows only requests with owner_id = Business ID.</span>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
