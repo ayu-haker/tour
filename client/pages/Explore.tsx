@@ -99,6 +99,7 @@ export default function Explore() {
   }
 
   function openAdd(place: TouristPlace) {
+    if (!user) { setLoginPrompt(true); return; }
     setTargetPlace(place);
     setPendingPhoto(null);
     setRevTitle("");
