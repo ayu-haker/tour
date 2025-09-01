@@ -238,7 +238,7 @@ export default function Explore() {
 
       {/* Add Review Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-full sm:max-w-xl max-h-[85vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>Add Review{targetPlace ? ` — ${targetPlace.name}` : ""}</DialogTitle>
           </DialogHeader>
@@ -269,7 +269,7 @@ export default function Explore() {
 
       {/* View Reviews Dialog */}
       <Dialog open={!!viewPlace} onOpenChange={(o)=>!o && setViewPlace(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-full sm:max-w-2xl max-h-[85vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>Reviews{viewPlace ? ` — ${viewPlace.name}` : ""}</DialogTitle>
           </DialogHeader>
