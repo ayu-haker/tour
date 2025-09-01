@@ -43,7 +43,7 @@ export function LeafletMap({ center = [28.6139, 77.209], zoom = 11, markers = []
     // Leaflet CSS already imported above; ensure container sizes via parent
   }, []);
   return (
-    <MapContainer center={center} zoom={zoom} className={cn(className ?? "h-80 w-full", "rounded-md overflow-hidden border") as string}>
+    <MapContainer center={center} zoom={zoom} className={cn(className ?? "h-64 md:h-80 lg:h-96 w-full", "rounded-md overflow-hidden border") as string}>
       <LayersControl position="topright">
         <LayersControl.BaseLayer checked name="OpenStreetMap">
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
