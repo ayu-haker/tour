@@ -13,9 +13,11 @@ type Req = {
   payload: any;
 };
 
-async function fetchRequests(type?: string): Promise<Req[]> {
-  const q = type ? `?type=${encodeURIComponent(type)}` : "";
-  const r = await fetch(`/api/requests${q}`);
+async function fetchRequests(type?: string, owner?: string): Promise<Req[]> {
+  const q = new URLSearchParams();
+  if (type) q.set('type', type);
+  if (owner) q.set('owner', owner);
+  const r = await fetch(`/api/requests${q.toString() ? `?${q.toString()}` : ''}`);
   if (!r.ok) throw new Error("failed");
   return await r.json();
 }
