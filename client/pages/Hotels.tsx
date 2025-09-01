@@ -79,8 +79,11 @@ export default function Hotels(){
 
   const markers: MapMarker[] = results.map(h => ({ id: h.id, position: h.position, title: `${h.name} • ₹${h.price.toLocaleString("en-IN")}` }));
 
-  function book(h: Hotel){
+  async function book(h: Hotel){
     toast({ title: "Booking created", description: `${h.name} in ${h.city} • ₹${h.price.toLocaleString("en-IN")}` });
+    try {
+      await fetch('/api/requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'hotel', payload: { id: h.id, name: h.name, city: h.city, price: h.price, stars: h.stars } }) });
+    } catch {}
   }
 
   return (
