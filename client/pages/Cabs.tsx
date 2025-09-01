@@ -130,8 +130,11 @@ export default function Cabs() {
                 <div className="flex gap-2">
                   <Input placeholder="Set on map or type" value={pickupText} onChange={(e)=>setPickupText(e.target.value)} />
                   <Button type="button" variant="outline" onClick={()=>{ setActive("pickup"); }}>Set on map</Button>
-                  <Button type="button" variant="secondary" onClick={useLocation}>Use my location</Button>
+                  <Button type="button" variant="secondary" onClick={useLocation} disabled={locLoading}>
+                    {locLoading ? "Locating…" : "Use my location"}
+                  </Button>
                 </div>
+                {locError && <p className="mt-1 text-xs text-red-600">{locError}</p>}
               </div>
               <div>
                 <Label>Drop</Label>
