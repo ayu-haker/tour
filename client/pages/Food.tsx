@@ -163,7 +163,9 @@ export default function Food(){
                 <span>Total</span>
                 <span>₹{total}</span>
               </div>
-              <Button disabled={cart.length===0} className="w-full">Place Order</Button>
+              <Button disabled={cart.length===0} className="w-full" onClick={async ()=>{
+                try { await fetch('/api/requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'food', payload: { items: cart, total } }) }); } catch {}
+              }}>Place Order</Button>
             </CardContent>
           </Card>
         </div>
