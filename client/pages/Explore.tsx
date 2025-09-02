@@ -80,6 +80,12 @@ const INDIAN_STATES = [
 
 const REV_KEY = "tour.placeReviews.v1";
 
+type CityOption = {
+  name: string;
+  lat: number;
+  lon: number;
+};
+
 function haversine(a: [number, number], b: [number, number]) {
   const toRad = (x: number) => (x * Math.PI) / 180;
   const R = 6371;
@@ -150,6 +156,9 @@ export default function Explore() {
   const [places, setPlaces] = useState<TouristPlace[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedState, setSelectedState] = useState("");
+  const [cities, setCities] = useState<CityOption[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
 
   const [reviews, setReviews] = useState<PlaceReview[]>(() =>
     loadJSON<PlaceReview[]>(REV_KEY, []),
@@ -286,6 +295,114 @@ export default function Explore() {
     }
   };
 
+  const fetchCitiesForState = async (STATE_NAME: string) => {
+    setCitiesLoading(true);
+    setCities([]);
+    try {
+      const query = `
+      [out:json][timeout:40];
+      area["name"="${STATE_NAME}"]["boundary"="administrative"]["admin_level"="4"]->.state;
+      (
+        node["place"~"city|town|municipality"](area.state);
+      );
+      out center tags;
+      `;
+      const res = await fetch("https://overpass-api.de/api/interpreter", {
+        method: "POST",
+        body: query,
+      });
+      const json = await res.json();
+      const list: CityOption[] = (json.elements || [])
+        .map((el: any) => ({
+          name: el.tags?.name,
+          lat: el.lat ?? el.center?.lat,
+          lon: el.lon ?? el.center?.lon,
+        }))
+        .filter((c: CityOption) => c.name && Number.isFinite(c.lat) && Number.isFinite(c.lon));
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      setCities(list);
+    } catch (e) {
+      setCities([]);
+    } finally {
+      setCitiesLoading(false);
+    }
+  };
+
+  const fetchTouristPlacesCity = async (
+    STATE_NAME: string,
+    CITY_NAME: string,
+    cityCenter?: [number, number],
+  ) => {
+    setLoading(true);
+    setPlaces([]);
+    try {
+      const boundaryQuery = `
+      [out:json][timeout:50];
+      area["name"="${STATE_NAME}"]["boundary"="administrative"]["admin_level"="4"]->.state;
+      rel["name"="${CITY_NAME}"]["boundary"="administrative"](area.state)->.cityArea;
+      (
+        node["tourism"](area.cityArea);
+        way["tourism"](area.cityArea);
+        node["historic"](area.cityArea);
+        way["historic"](area.cityArea);
+      );
+      out center tags;
+      `;
+      let response = await fetch("https://overpass-api.de/api/interpreter", {
+        method: "POST",
+        body: boundaryQuery,
+      });
+      let json = await response.json();
+      let elems: any[] = json.elements || [];
+
+      if (!elems.length && cityCenter) {
+        const [clat, clon] = cityCenter;
+        const aroundQuery = `
+        [out:json][timeout:50];
+        (
+          node["tourism"](around:20000,${clat},${clon});
+          way["tourism"](around:20000,${clat},${clon});
+          node["historic"](around:20000,${clat},${clon});
+          way["historic"](around:20000,${clat},${clon});
+        );
+        out center tags;
+        `;
+        response = await fetch("https://overpass-api.de/api/interpreter", {
+          method: "POST",
+          body: aroundQuery,
+        });
+        json = await response.json();
+        elems = json.elements || [];
+      }
+
+      const mapped: TouristPlace[] = elems.map((el: any) => ({
+        id: el.type + "/" + el.id,
+        name: el.tags?.name || "Unknown",
+        lat: el.lat ?? el.center?.lat,
+        lon: el.lon ?? el.center?.lon,
+        type: el.tags?.tourism || el.tags?.historic || "general",
+        state: STATE_NAME,
+        price:
+          el.tags?.tourism === "museum"
+            ? "₹50 – ₹200"
+            : el.tags?.tourism === "attraction"
+              ? "₹20 – ₹500"
+              : el.tags?.tourism === "zoo"
+                ? "₹100 – ₹300"
+                : el.tags?.tourism === "theme_park"
+                  ? "₹500 – ₹1500"
+                  : el.tags?.tourism === "hotel"
+                    ? "Varies"
+                    : "Free / Nominal",
+      }));
+      setPlaces(mapped);
+    } catch (e) {
+      setPlaces([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   function getLocation() {
     setLocError(null);
     if (!("geolocation" in navigator)) {
@@ -371,8 +488,16 @@ export default function Explore() {
             <select
               value={selectedState}
               onChange={(e) => {
-                setSelectedState(e.target.value);
-                if (e.target.value) fetchTouristPlaces(e.target.value);
+                const v = e.target.value;
+                setSelectedState(v);
+                setSelectedCity("");
+                if (v) {
+                  fetchTouristPlaces(v);
+                  fetchCitiesForState(v);
+                } else {
+                  setPlaces([]);
+                  setCities([]);
+                }
               }}
               className="border rounded-lg p-2 flex-1 bg-background"
             >
@@ -383,6 +508,30 @@ export default function Explore() {
                 </option>
               ))}
             </select>
+
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSelectedCity(v);
+                if (v) {
+                  const city = cities.find((c) => c.name === v);
+                  fetchTouristPlacesCity(selectedState, v, city ? [city.lat, city.lon] : undefined);
+                } else if (selectedState) {
+                  fetchTouristPlaces(selectedState);
+                }
+              }}
+              disabled={!selectedState || citiesLoading}
+              className="border rounded-lg p-2 flex-1 bg-background disabled:opacity-60"
+            >
+              <option value="">All Cities</option>
+              {cities.map((c) => (
+                <option key={c.name} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
@@ -401,6 +550,9 @@ export default function Explore() {
             </div>
           </div>
           {locError && <p className="text-xs text-red-600">{locError}</p>}
+          {selectedState && citiesLoading && (
+            <p className="text-xs text-muted-foreground">Loading cities…</p>
+          )}
 
           {loading && (
             <>
@@ -426,7 +578,12 @@ export default function Explore() {
             <>
               <p>
                 Showing first {places.slice(0, 100).length} results for{" "}
-                <b>{selectedState}</b>
+                <b>{selectedState}</b>{" "}
+                {selectedCity && (
+                  <>
+                    in <b>{selectedCity}</b>
+                  </>
+                )}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 {places.slice(0, 100).map((place) => {
@@ -489,9 +646,14 @@ export default function Explore() {
                 <LeafletMap
                   center={
                     (userLoc ||
-                      (places[0] && [places[0].lat, places[0].lon]) || [
-                        20.5937, 78.9629,
-                      ]) as [number, number]
+                      (selectedCity && cities.find((c) => c.name === selectedCity)
+                        ? [
+                            cities.find((c) => c.name === selectedCity)!.lat,
+                            cities.find((c) => c.name === selectedCity)!.lon,
+                          ]
+                        : (places[0] && [places[0].lat, places[0].lon])) || [
+                          20.5937, 78.9629,
+                        ]) as [number, number]
                   }
                   markers={markers}
                   paths={
