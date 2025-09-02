@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LeafletMap, MapMarker } from "@/components/maps/LeafletMap";
+import { loadJSON, saveJSON } from "@/lib/storage";
 
 const INDIA_CENTER: [number, number] = [20.5937, 78.9629];
 
@@ -185,9 +186,8 @@ export default function Cabs() {
   async function requestRide() {
     if (!pickup || !drop) return;
     setStatus("searching");
-    // Create backend record
     try {
-      await fetch("/api/requests", {
+      const r = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -195,6 +195,13 @@ export default function Cabs() {
           payload: { pickup, drop, category, estimate, highDemand },
         }),
       });
+      const data = await r.json();
+      const MY_REQ_KEY = "tour.myRequests";
+      const list = loadJSON<string[]>(MY_REQ_KEY, []);
+      if (data?.id && !list.includes(String(data.id))) {
+        list.unshift(String(data.id));
+        saveJSON(MY_REQ_KEY, list.slice(0, 100));
+      }
     } catch {}
     setTimeout(() => {
       setStatus("driver");
