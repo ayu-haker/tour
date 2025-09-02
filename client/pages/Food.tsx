@@ -361,7 +361,7 @@ export default function Food() {
                         (s, i) => s + i.price * i.qty,
                         0,
                       );
-                      await fetch("/api/requests", {
+                      const r = await fetch("/api/requests", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -375,6 +375,14 @@ export default function Food() {
                           },
                         }),
                       });
+                      const data = await r.json();
+                      const { loadJSON, saveJSON } = await import("@/lib/storage");
+                      const MY_REQ_KEY = "tour.myRequests";
+                      const list = loadJSON<string[]>(MY_REQ_KEY, []);
+                      if (data?.id && !list.includes(String(data.id))) {
+                        list.unshift(String(data.id));
+                        saveJSON(MY_REQ_KEY, list.slice(0, 100));
+                      }
                     }
                   } catch {}
                 }}
