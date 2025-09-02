@@ -376,7 +376,6 @@ export default function Food() {
                         }),
                       });
                       const data = await r.json();
-                      const { loadJSON, saveJSON } = await import("@/lib/storage");
                       const MY_REQ_KEY = "tour.myRequests";
                       const list = loadJSON<string[]>(MY_REQ_KEY, []);
                       if (data?.id && !list.includes(String(data.id))) {
