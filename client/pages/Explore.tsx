@@ -492,7 +492,7 @@ export default function Explore() {
             Explore Tourist Places in India
           </h1>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
             <select
               value={selectedState}
               onChange={(e) => {
@@ -507,7 +507,7 @@ export default function Explore() {
                   setCities([]);
                 }
               }}
-              className="border rounded-lg p-2 flex-1 bg-background"
+              className="border rounded-lg p-2 w-full md:flex-1 bg-background"
             >
               <option value="">Select a State / UT</option>
               {INDIAN_STATES.map((state) => (
@@ -530,7 +530,7 @@ export default function Explore() {
                 }
               }}
               disabled={!selectedState || citiesLoading}
-              className="border rounded-lg p-2 flex-1 bg-background disabled:opacity-60"
+              className="border rounded-lg p-2 w-full md:flex-1 md:max-w-sm bg-background disabled:opacity-60"
             >
               <option value="">All Cities</option>
               {cities.map((c) => (
@@ -540,7 +540,7 @@ export default function Explore() {
               ))}
             </select>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Button
                 variant="secondary"
                 onClick={getLocation}
