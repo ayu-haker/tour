@@ -16,6 +16,8 @@ import { Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import { LeafletMap, MapMarker } from "@/components/maps/LeafletMap";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type TouristPlace = {
   id: string;
@@ -363,101 +365,126 @@ export default function Explore() {
 
   return (
     <SiteLayout>
-      <div className="p-4 grid gap-4">
-        <h1 className="text-2xl font-bold">Explore Tourist Places in India</h1>
+      <div className="p-4 grid gap-4 md:grid-cols-3">
+        <div className="md:col-span-2 space-y-4">
+          <h1 className="text-2xl font-bold">Explore Tourist Places in India</h1>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-2">
-          <select
-            value={selectedState}
-            onChange={(e) => {
-              setSelectedState(e.target.value);
-              if (e.target.value) fetchTouristPlaces(e.target.value);
-            }}
-            className="border rounded-lg p-2 flex-1 bg-background"
-          >
-            <option value="">Select a State / UT</option>
-            {INDIAN_STATES.map((state) => (
-              <option key={state} value={state}>
-                {state}
-              </option>
-            ))}
-          </select>
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={getLocation} disabled={locLoading}>
-              {locLoading ? "Locating…" : userLoc ? "Update my location" : "Use my location"}
-            </Button>
-            {userLoc && <span className="text-sm text-muted-foreground">Set</span>}
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <select
+              value={selectedState}
+              onChange={(e) => {
+                setSelectedState(e.target.value);
+                if (e.target.value) fetchTouristPlaces(e.target.value);
+              }}
+              className="border rounded-lg p-2 flex-1 bg-background"
+            >
+              <option value="">Select a State / UT</option>
+              {INDIAN_STATES.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" onClick={getLocation} disabled={locLoading}>
+                {locLoading ? "Locating…" : userLoc ? "Update my location" : "Use my location"}
+              </Button>
+              {userLoc && <span className="text-sm text-muted-foreground">Set</span>}
+            </div>
+          </div>
+          {locError && <p className="text-xs text-red-600">{locError}</p>}
+
+          {loading && (
+            <>
+              <p>Loading tourist places in {selectedState}...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="border p-4 rounded-xl bg-card">
+                    <Skeleton className="h-5 w-2/3 mb-2" />
+                    <Skeleton className="h-4 w-1/2 mb-2" />
+                    <Skeleton className="h-4 w-1/3 mb-2" />
+                    <Skeleton className="h-3 w-full" />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {!loading && selectedState && places.length === 0 && (
+            <p>No places found for {selectedState}. Try another state.</p>
+          )}
+
+          {!loading && places.length > 0 && (
+            <>
+              <p>
+                Showing first {places.slice(0, 100).length} results for <b>{selectedState}</b>
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                {places.slice(0, 100).map((place) => {
+                  const d = distanceMap[place.id];
+                  return (
+                    <div
+                      key={place.id}
+                      className="border p-4 rounded-xl shadow bg-card hover:shadow-lg transition"
+                    >
+                      <h2 className="font-bold text-lg">{place.name}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {place.state} • {place.type}
+                      </p>
+                      <p className="text-sm font-medium mt-1">Entry Fee: {place.price}</p>
+                      <p className="text-xs">📍 Lat: {place.lat}, Lon: {place.lon}</p>
+                      {userLoc && (
+                        <p className="text-xs mt-1">Distance: {d?.toFixed(2)} km</p>
+                      )}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Button size="sm" onClick={() => openAdd(place)}>
+                          Add Review
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setViewPlace(place)}>
+                          Reviews ({byPlace[place.id]?.length || 0})
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => routeTo(place)} disabled={!userLoc}>
+                          Show route
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="md:col-span-1">
+          <div className="md:sticky top-24">
+            <Card>
+              <CardHeader>
+                <CardTitle>Map</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LeafletMap
+                  center={
+                    (userLoc || (places[0] && [places[0].lat, places[0].lon]) || [20.5937, 78.9629]) as [number, number]
+                  }
+                  markers={markers}
+                  paths={
+                    routePoints.length > 1
+                      ? [{ points: routePoints, color: "#3b82f6", weight: 5 }]
+                      : undefined
+                  }
+                  path={!routePoints.length && selectedForRoute && userLoc ? [userLoc, [selectedForRoute.lat, selectedForRoute.lon]] : undefined}
+                  className="h-[65vh]"
+                />
+                {routeLoading && (
+                  <p className="text-xs text-muted-foreground mt-2">Calculating route…</p>
+                )}
+                {routeError && (
+                  <p className="text-xs text-amber-600 mt-2">{routeError}</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
-        {locError && <p className="text-xs text-red-600">{locError}</p>}
-
-        <div>
-          <LeafletMap
-            center={
-              (userLoc || (places[0] && [places[0].lat, places[0].lon]) || [20.5937, 78.9629]) as [number, number]
-            }
-            markers={markers}
-            paths={
-              routePoints.length > 1
-                ? [{ points: routePoints, color: "#3b82f6", weight: 5 }]
-                : undefined
-            }
-            path={!routePoints.length && selectedForRoute && userLoc ? [userLoc, [selectedForRoute.lat, selectedForRoute.lon]] : undefined}
-            className="h-72 md:h-96"
-          />
-          {routeLoading && (
-            <p className="text-xs text-muted-foreground mt-1">Calculating route…</p>
-          )}
-          {routeError && (
-            <p className="text-xs text-amber-600 mt-1">{routeError}</p>
-          )}
-        </div>
-
-        {loading && <p>Loading tourist places in {selectedState}...</p>}
-
-        {!loading && selectedState && places.length === 0 && (
-          <p>No places found for {selectedState}. Try another state.</p>
-        )}
-
-        {!loading && places.length > 0 && (
-          <>
-            <p>
-              Showing first {places.slice(0, 100).length} results for <b>{selectedState}</b>
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {places.slice(0, 100).map((place) => {
-                const d = distanceMap[place.id];
-                return (
-                  <div
-                    key={place.id}
-                    className="border p-4 rounded-xl shadow bg-card hover:shadow-lg transition"
-                  >
-                    <h2 className="font-bold text-lg">{place.name}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {place.state} • {place.type}
-                    </p>
-                    <p className="text-sm font-medium mt-1">Entry Fee: {place.price}</p>
-                    <p className="text-xs">📍 Lat: {place.lat}, Lon: {place.lon}</p>
-                    {userLoc && (
-                      <p className="text-xs mt-1">Distance: {d?.toFixed(2)} km</p>
-                    )}
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <Button size="sm" onClick={() => openAdd(place)}>
-                        Add Review
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => setViewPlace(place)}>
-                        Reviews ({byPlace[place.id]?.length || 0})
-                      </Button>
-                      <Button size="sm" variant="secondary" onClick={() => routeTo(place)} disabled={!userLoc}>
-                        Show route
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
       </div>
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
