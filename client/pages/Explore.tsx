@@ -312,15 +312,23 @@ export default function Explore() {
         body: query,
       });
       const json = await res.json();
-      const list: CityOption[] = (json.elements || [])
+      const raw: CityOption[] = (json.elements || [])
         .map((el: any) => ({
           name: el.tags?.name,
           lat: el.lat ?? el.center?.lat,
           lon: el.lon ?? el.center?.lon,
         }))
         .filter((c: CityOption) => c.name && Number.isFinite(c.lat) && Number.isFinite(c.lon));
-      list.sort((a, b) => a.name.localeCompare(b.name));
-      setCities(list);
+      const seen = new Set<string>();
+      const unique: CityOption[] = [];
+      for (const c of raw) {
+        const nm = String(c.name).trim();
+        if (seen.has(nm)) continue;
+        seen.add(nm);
+        unique.push({ ...c, name: nm });
+      }
+      unique.sort((a, b) => a.name.localeCompare(b.name));
+      setCities(unique);
     } catch (e) {
       setCities([]);
     } finally {
@@ -526,7 +534,7 @@ export default function Explore() {
             >
               <option value="">All Cities</option>
               {cities.map((c) => (
-                <option key={c.name} value={c.name}>
+                <option key={`${c.name}-${c.lat.toFixed(3)}-${c.lon.toFixed(3)}`} value={c.name}>
                   {c.name}
                 </option>
               ))}
