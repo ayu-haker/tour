@@ -301,10 +301,7 @@ export default function Explore() {
     setLocLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const p: [number, number] = [
-          pos.coords.latitude,
-          pos.coords.longitude,
-        ];
+        const p: [number, number] = [pos.coords.latitude, pos.coords.longitude];
         setUserLoc(p);
         setLocLoading(false);
       },
@@ -345,8 +342,7 @@ export default function Explore() {
 
   const markers: MapMarker[] = useMemo(() => {
     const m: MapMarker[] = [];
-    if (userLoc)
-      m.push({ id: "me", position: userLoc, title: "You" });
+    if (userLoc) m.push({ id: "me", position: userLoc, title: "You" });
     for (const p of places.slice(0, 100))
       m.push({
         id: p.id,
@@ -367,7 +363,9 @@ export default function Explore() {
     <SiteLayout>
       <div className="p-4 grid gap-4 md:grid-cols-3">
         <div className="md:col-span-2 space-y-4">
-          <h1 className="text-2xl font-bold">Explore Tourist Places in India</h1>
+          <h1 className="text-2xl font-bold">
+            Explore Tourist Places in India
+          </h1>
 
           <div className="flex flex-col md:flex-row md:items-center gap-2">
             <select
@@ -386,10 +384,20 @@ export default function Explore() {
               ))}
             </select>
             <div className="flex items-center gap-2">
-              <Button variant="secondary" onClick={getLocation} disabled={locLoading}>
-                {locLoading ? "Locating…" : userLoc ? "Update my location" : "Use my location"}
+              <Button
+                variant="secondary"
+                onClick={getLocation}
+                disabled={locLoading}
+              >
+                {locLoading
+                  ? "Locating…"
+                  : userLoc
+                    ? "Update my location"
+                    : "Use my location"}
               </Button>
-              {userLoc && <span className="text-sm text-muted-foreground">Set</span>}
+              {userLoc && (
+                <span className="text-sm text-muted-foreground">Set</span>
+              )}
             </div>
           </div>
           {locError && <p className="text-xs text-red-600">{locError}</p>}
@@ -417,7 +425,8 @@ export default function Explore() {
           {!loading && places.length > 0 && (
             <>
               <p>
-                Showing first {places.slice(0, 100).length} results for <b>{selectedState}</b>
+                Showing first {places.slice(0, 100).length} results for{" "}
+                <b>{selectedState}</b>
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 {places.slice(0, 100).map((place) => {
@@ -431,19 +440,34 @@ export default function Explore() {
                       <p className="text-sm text-muted-foreground">
                         {place.state} • {place.type}
                       </p>
-                      <p className="text-sm font-medium mt-1">Entry Fee: {place.price}</p>
-                      <p className="text-xs">📍 Lat: {place.lat}, Lon: {place.lon}</p>
+                      <p className="text-sm font-medium mt-1">
+                        Entry Fee: {place.price}
+                      </p>
+                      <p className="text-xs">
+                        📍 Lat: {place.lat}, Lon: {place.lon}
+                      </p>
                       {userLoc && (
-                        <p className="text-xs mt-1">Distance: {d?.toFixed(2)} km</p>
+                        <p className="text-xs mt-1">
+                          Distance: {d?.toFixed(2)} km
+                        </p>
                       )}
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <Button size="sm" onClick={() => openAdd(place)}>
                           Add Review
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setViewPlace(place)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setViewPlace(place)}
+                        >
                           Reviews ({byPlace[place.id]?.length || 0})
                         </Button>
-                        <Button size="sm" variant="secondary" onClick={() => routeTo(place)} disabled={!userLoc}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => routeTo(place)}
+                          disabled={!userLoc}
+                        >
                           Show route
                         </Button>
                       </div>
@@ -464,7 +488,10 @@ export default function Explore() {
               <CardContent>
                 <LeafletMap
                   center={
-                    (userLoc || (places[0] && [places[0].lat, places[0].lon]) || [20.5937, 78.9629]) as [number, number]
+                    (userLoc ||
+                      (places[0] && [places[0].lat, places[0].lon]) || [
+                        20.5937, 78.9629,
+                      ]) as [number, number]
                   }
                   markers={markers}
                   paths={
@@ -472,11 +499,17 @@ export default function Explore() {
                       ? [{ points: routePoints, color: "#3b82f6", weight: 5 }]
                       : undefined
                   }
-                  path={!routePoints.length && selectedForRoute && userLoc ? [userLoc, [selectedForRoute.lat, selectedForRoute.lon]] : undefined}
+                  path={
+                    !routePoints.length && selectedForRoute && userLoc
+                      ? [userLoc, [selectedForRoute.lat, selectedForRoute.lon]]
+                      : undefined
+                  }
                   className="h-[65vh]"
                 />
                 {routeLoading && (
-                  <p className="text-xs text-muted-foreground mt-2">Calculating route…</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Calculating route…
+                  </p>
                 )}
                 {routeError && (
                   <p className="text-xs text-amber-600 mt-2">{routeError}</p>
@@ -543,16 +576,27 @@ export default function Explore() {
           </DialogHeader>
           <div className="grid gap-3">
             {viewPlace && (byPlace[viewPlace.id]?.length || 0) === 0 && (
-              <p className="text-sm text-muted-foreground">No reviews yet for this place.</p>
+              <p className="text-sm text-muted-foreground">
+                No reviews yet for this place.
+              </p>
             )}
             {viewPlace && (byPlace[viewPlace.id]?.length || 0) > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {byPlace[viewPlace.id]!.map((r) => (
-                  <div key={r.id} className="border rounded-md overflow-hidden bg-card">
+                  <div
+                    key={r.id}
+                    className="border rounded-md overflow-hidden bg-card"
+                  >
                     {r.dataUrl ? (
-                      <img src={r.dataUrl} alt={r.title} className="w-full h-40 object-cover" />
+                      <img
+                        src={r.dataUrl}
+                        alt={r.title}
+                        className="w-full h-40 object-cover"
+                      />
                     ) : (
-                      <div className="w-full h-40 grid place-items-center text-sm text-muted-foreground border-b">No photo</div>
+                      <div className="w-full h-40 grid place-items-center text-sm text-muted-foreground border-b">
+                        No photo
+                      </div>
                     )}
                     <div className="p-3">
                       <div className="flex items-center justify-between">
@@ -562,7 +606,9 @@ export default function Explore() {
                         <Rating
                           value={r.rating}
                           onChange={(v) => {
-                            const next = reviews.map((x) => (x.id === r.id ? { ...x, rating: v } : x));
+                            const next = reviews.map((x) =>
+                              x.id === r.id ? { ...x, rating: v } : x,
+                            );
                             persist(next);
                           }}
                         />
@@ -570,9 +616,17 @@ export default function Explore() {
                       <p className="text-xs text-muted-foreground mt-1">
                         {new Date(r.createdAt).toLocaleString()}
                       </p>
-                      {r.notes && <p className="text-sm mt-2 whitespace-pre-wrap">{r.notes}</p>}
+                      {r.notes && (
+                        <p className="text-sm mt-2 whitespace-pre-wrap">
+                          {r.notes}
+                        </p>
+                      )}
                       <div className="flex justify-end mt-2">
-                        <Button size="sm" variant="destructive" onClick={() => deleteReview(r.id)}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteReview(r.id)}
+                        >
                           Delete
                         </Button>
                       </div>
