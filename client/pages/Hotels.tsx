@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { loadJSON } from "@/lib/storage";
+import { loadJSON, saveJSON } from "@/lib/storage";
 import { STATE_CITIES } from "@/data/india";
 
 // See shared dataset in @/data/india
@@ -222,7 +222,6 @@ export default function Hotels() {
         }),
       });
       const data = await r.json();
-      const { loadJSON, saveJSON } = await import("@/lib/storage");
       const MY_REQ_KEY = "tour.myRequests";
       const list = loadJSON<string[]>(MY_REQ_KEY, []);
       if (data?.id && !list.includes(String(data.id))) {
