@@ -206,7 +206,7 @@ export default function Hotels() {
       description: `${h.name} in ${h.city} • ₹${h.price.toLocaleString("en-IN")}`,
     });
     try {
-      await fetch("/api/requests", {
+      const r = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -221,6 +221,14 @@ export default function Hotels() {
           },
         }),
       });
+      const data = await r.json();
+      const { loadJSON, saveJSON } = await import("@/lib/storage");
+      const MY_REQ_KEY = "tour.myRequests";
+      const list = loadJSON<string[]>(MY_REQ_KEY, []);
+      if (data?.id && !list.includes(String(data.id))) {
+        list.unshift(String(data.id));
+        saveJSON(MY_REQ_KEY, list.slice(0, 100));
+      }
     } catch {}
   }
 
