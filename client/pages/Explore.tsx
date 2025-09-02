@@ -318,7 +318,10 @@ export default function Explore() {
           lat: el.lat ?? el.center?.lat,
           lon: el.lon ?? el.center?.lon,
         }))
-        .filter((c: CityOption) => c.name && Number.isFinite(c.lat) && Number.isFinite(c.lon));
+        .filter(
+          (c: CityOption) =>
+            c.name && Number.isFinite(c.lat) && Number.isFinite(c.lon),
+        );
       const seen = new Set<string>();
       const unique: CityOption[] = [];
       for (const c of raw) {
@@ -524,7 +527,11 @@ export default function Explore() {
                 setSelectedCity(v);
                 if (v) {
                   const city = cities.find((c) => c.name === v);
-                  fetchTouristPlacesCity(selectedState, v, city ? [city.lat, city.lon] : undefined);
+                  fetchTouristPlacesCity(
+                    selectedState,
+                    v,
+                    city ? [city.lat, city.lon] : undefined,
+                  );
                 } else if (selectedState) {
                   fetchTouristPlaces(selectedState);
                 }
@@ -534,7 +541,10 @@ export default function Explore() {
             >
               <option value="">All Cities</option>
               {cities.map((c) => (
-                <option key={`${c.name}-${c.lat.toFixed(3)}-${c.lon.toFixed(3)}`} value={c.name}>
+                <option
+                  key={`${c.name}-${c.lat.toFixed(3)}-${c.lon.toFixed(3)}`}
+                  value={c.name}
+                >
                   {c.name}
                 </option>
               ))}
@@ -654,14 +664,15 @@ export default function Explore() {
                 <LeafletMap
                   center={
                     (userLoc ||
-                      (selectedCity && cities.find((c) => c.name === selectedCity)
+                      (selectedCity &&
+                      cities.find((c) => c.name === selectedCity)
                         ? [
                             cities.find((c) => c.name === selectedCity)!.lat,
                             cities.find((c) => c.name === selectedCity)!.lon,
                           ]
-                        : (places[0] && [places[0].lat, places[0].lon])) || [
-                          20.5937, 78.9629,
-                        ]) as [number, number]
+                        : places[0] && [places[0].lat, places[0].lon]) || [
+                        20.5937, 78.9629,
+                      ]) as [number, number]
                   }
                   markers={markers}
                   paths={
