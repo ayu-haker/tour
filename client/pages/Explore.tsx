@@ -290,6 +290,7 @@ export default function Explore() {
         .filter(
           (p: any) =>
             p.name && p.name.length > 0 &&
+            p.type !== "hotel" &&
             Number.isFinite(p.lat) &&
             Number.isFinite(p.lon),
         );
@@ -417,6 +418,7 @@ export default function Explore() {
         .filter(
           (p: any) =>
             p.name && p.name.length > 0 &&
+            p.type !== "hotel" &&
             Number.isFinite(p.lat) &&
             Number.isFinite(p.lon),
         );
