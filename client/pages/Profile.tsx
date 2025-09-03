@@ -161,7 +161,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="rounded-2xl border bg-card/80 backdrop-blur p-4 sm:p-6">
+      <div className="rounded-2xl border border-border bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 sm:p-6">
         <Tabs defaultValue="account" className="mt-2 sm:mt-4">
         <TabsList>
           <TabsTrigger value="account">Account</TabsTrigger>
