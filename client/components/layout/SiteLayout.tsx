@@ -8,7 +8,7 @@ export function SiteLayout({ children }: PropsWithChildren) {
   const isMobile = useIsMobile();
   return (
     <div className="relative min-h-dvh bg-background text-foreground">
-      {!isMobile && <BackgroundCanvas />}
+      <BackgroundCanvas />
       <SiteHeader />
       <main className="relative z-10 container py-6 sm:py-10">{children}</main>
       <SiteFooter />
