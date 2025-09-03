@@ -6,7 +6,7 @@ export function BackgroundCanvas({ dark = false }: { dark?: boolean }) {
     ? { pointerEvents: "none", backgroundColor: "#020617" }
     : { pointerEvents: "none" };
   const overlay = dark
-    ? "linear-gradient(rgba(2, 6, 23, 0.88), rgba(2, 6, 23, 0.7), rgba(2, 6, 23, 0.55))"
+    ? "linear-gradient(rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.45), rgba(2, 6, 23, 0.35))"
     : "linear-gradient(rgba(2, 6, 23, 0.75), rgba(2, 6, 23, 0.5), rgba(2, 6, 23, 0.35))";
   return (
     <div className={containerClass}>
