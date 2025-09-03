@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SiteLayout } from "@/components/layout/SiteLayout";
+import { Bed, Car, Utensils, MapPin } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -42,10 +43,10 @@ export default function Index() {
           <span className="inline-flex items-center gap-2 rounded-full border bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">Most Popular</span>
         </div>
         <div className="grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-          <ServiceCard title="Hotel Booking" count="100+ hotels" desc="Find and book perfect accommodation" to="/hotels" icon="���" />
-          <ServiceCard title="Cab Booking" count="200+ drivers" desc="Book reliable rides to your destination" to="/cabs" icon="🚖" />
-          <ServiceCard title="Food Delivery" count="150+ restaurants" desc="Delicious local cuisine delivered" to="/food" icon="🍜" />
-          <ServiceCard title="Tourist Spots" count="500+ locations" desc="Discover amazing places to visit" to="/spots" icon="🗺️" />
+          <ServiceCard title="Hotel Booking" count="100+ hotels" desc="Find and book perfect accommodation" to="/hotels" icon={<Bed className="h-5 w-5" />} />
+          <ServiceCard title="Cab Booking" count="200+ drivers" desc="Book reliable rides to your destination" to="/cabs" icon={<Car className="h-5 w-5" />} />
+          <ServiceCard title="Food Delivery" count="150+ restaurants" desc="Delicious local cuisine delivered" to="/food" icon={<Utensils className="h-5 w-5" />} />
+          <ServiceCard title="Tourist Spots" count="500+ locations" desc="Discover amazing places to visit" to="/spots" icon={<MapPin className="h-5 w-5" />} />
         </div>
       </section>
 
@@ -70,7 +71,7 @@ export default function Index() {
   );
 }
 
-function ServiceCard({ title, count, desc, to, icon }: { title: string; count: string; desc: string; to: string; icon: string }) {
+function ServiceCard({ title, count, desc, to, icon }: { title: string; count: string; desc: string; to: string; icon: React.ReactNode }) {
   return (
     <Card className="hover:shadow-md transition-shadow active:scale-[0.99]">
       <CardHeader>
