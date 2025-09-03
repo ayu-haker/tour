@@ -57,22 +57,7 @@ export function SiteHeader() {
           </div>
           <span className="font-extrabold text-xl tracking-tight">TOUR</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-1 ml-6">
-          {nav.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              className={({ isActive }) =>
-                cn(
-                  "px-3 py-2 rounded-md text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent",
-                  isActive && "bg-accent text-foreground",
-                )
-              }
-            >
-              {n.label}
-            </NavLink>
-          ))}
-        </nav>
+        {/* desktop nav removed, using menu button instead */}
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2">
             <DropdownMenu>
