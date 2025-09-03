@@ -134,11 +134,16 @@ export default function Profile() {
 
   return (
     <SiteLayout>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Profile</h1>
-        <Button variant="outline" onClick={logout}>
-          Logout
-        </Button>
+      <div className="relative overflow-hidden rounded-2xl border p-4 sm:p-6 mb-4">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10" />
+        <div className="relative z-10 flex items-center justify-between">
+          <h1 className="text-2xl sm:text-3xl font-extrabold">
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Profile</span>
+          </h1>
+          <Button variant="secondary" onClick={logout}>
+            Logout
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="account" className="mt-6">
