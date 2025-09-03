@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import CameraCapture from "@/components/media/CameraCapture";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
