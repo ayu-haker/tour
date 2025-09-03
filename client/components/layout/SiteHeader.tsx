@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Menu } from "lucide-react";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -74,7 +74,21 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <div className="hidden md:flex">
+          <div className="hidden md:flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="ghost" aria-label="Menu">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {nav.map((n) => (
+                  <DropdownMenuItem key={n.to} asChild>
+                    <Link to={n.to}>{n.label}</Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <AuthButtons />
           </div>
           <div className="md:hidden flex items-center gap-2">
