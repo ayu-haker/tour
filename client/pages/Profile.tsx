@@ -87,14 +87,18 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
     async function load() {
+      if (myRequests.length === 0) {
+        setReqs([]);
+        return;
+      }
       setLoadingReqs(true);
       try {
-        const r = await fetch("/api/requests");
+        const r = await fetch("/api/requests", { signal: controller.signal });
+        if (!r.ok) throw new Error("bad status");
         const all = (await r.json()) as any[];
-        const mine = myRequests.length
-          ? all.filter((x) => myRequests.includes(String(x.id)))
-          : [];
+        const mine = all.filter((x) => myRequests.includes(String(x.id)));
         setReqs(mine);
       } catch {
         setReqs([]);
@@ -103,8 +107,11 @@ export default function Profile() {
       }
     }
     load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
+    const t = myRequests.length > 0 ? setInterval(load, 5000) : null;
+    return () => {
+      controller.abort();
+      if (t) clearInterval(t);
+    };
   }, [myRequests.join(",")]);
 
   function removePlace(id: string) {
