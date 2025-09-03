@@ -87,6 +87,21 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
+    // Force dark theme while on Profile for better 3D contrast, then restore on unmount
+    const root = document.documentElement;
+    const hadLight = root.classList.contains("light");
+    const hadDark = root.classList.contains("dark");
+    root.classList.add("dark");
+    root.classList.remove("light");
+    return () => {
+      // restore the user's preference
+      if (hadLight && !hadDark) applyTheme("light");
+      else if (!hadLight && hadDark) applyTheme("dark");
+      else applyTheme(prof.theme);
+    };
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
     async function load() {
       if (myRequests.length === 0) {
@@ -161,7 +176,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 sm:p-6">
+      <div className="rounded-2xl border border-border bg-background/45 backdrop-blur supports-[backdrop-filter]:bg-background/35 p-4 sm:p-6">
         <Tabs defaultValue="account" className="mt-2 sm:mt-4">
         <TabsList>
           <TabsTrigger value="account">Account</TabsTrigger>
