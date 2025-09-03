@@ -135,7 +135,7 @@ export default function Profile() {
   return (
     <SiteLayout>
       <div className="relative overflow-hidden rounded-2xl border p-4 sm:p-6 mb-4">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 to-background/80" />
         <div className="relative z-10 flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-extrabold">
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Profile</span>
@@ -146,7 +146,8 @@ export default function Profile() {
         </div>
       </div>
 
-      <Tabs defaultValue="account" className="mt-6">
+      <div className="rounded-2xl border bg-card/80 backdrop-blur p-4 sm:p-6">
+        <Tabs defaultValue="account" className="mt-2 sm:mt-4">
         <TabsList>
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="requests">My Requests</TabsTrigger>
@@ -411,6 +412,7 @@ export default function Profile() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </SiteLayout>
   );
 }
