@@ -100,22 +100,6 @@ export function SiteHeader() {
           </div>
         </div>
       </div>
-      <div className="md:hidden border-t bg-background">
-        <div className="container overflow-x-auto whitespace-nowrap py-2">
-          {nav.map((n) => (
-            <Link
-              key={n.to}
-              to={n.to}
-              className={cn(
-                "inline-block px-4 py-3 text-base rounded-md mr-2 border",
-                pathname === n.to ? "bg-accent" : "bg-card",
-              )}
-            >
-              {n.label}
-            </Link>
-          ))}
-        </div>
-      </div>
     </header>
   );
 }
