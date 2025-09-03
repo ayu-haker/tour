@@ -266,26 +266,33 @@ export default function Explore() {
       });
       const json = await response.json();
 
-      const mapped: TouristPlace[] = json.elements.map((el: any) => ({
-        id: el.type + "/" + el.id,
-        name: el.tags?.name || "Unknown",
-        lat: el.lat ?? el.center?.lat,
-        lon: el.lon ?? el.center?.lon,
-        type: el.tags?.tourism || el.tags?.historic || "general",
-        state: STATE_NAME,
-        price:
-          el.tags?.tourism === "museum"
-            ? "₹50 – ₹200"
-            : el.tags?.tourism === "attraction"
-              ? "₹20 – ₹500"
-              : el.tags?.tourism === "zoo"
-                ? "₹100 – ₹300"
-                : el.tags?.tourism === "theme_park"
-                  ? "₹500 – ₹1500"
-                  : el.tags?.tourism === "hotel"
-                    ? "Varies"
-                    : "Free / Nominal",
-      }));
+      const mapped: TouristPlace[] = json.elements
+        .map((el: any) => ({
+          id: el.type + "/" + el.id,
+          name: (el.tags?.name ?? "").trim(),
+          lat: el.lat ?? el.center?.lat,
+          lon: el.lon ?? el.center?.lon,
+          type: el.tags?.tourism || el.tags?.historic || "general",
+          state: STATE_NAME,
+          price:
+            el.tags?.tourism === "museum"
+              ? "₹50 – ₹200"
+              : el.tags?.tourism === "attraction"
+                ? "₹20 – ₹500"
+                : el.tags?.tourism === "zoo"
+                  ? "₹100 – ₹300"
+                  : el.tags?.tourism === "theme_park"
+                    ? "₹500 – ₹1500"
+                    : el.tags?.tourism === "hotel"
+                      ? "Varies"
+                      : "Free / Nominal",
+        }))
+        .filter(
+          (p: any) =>
+            p.name && p.name.length > 0 &&
+            Number.isFinite(p.lat) &&
+            Number.isFinite(p.lon),
+        );
 
       setPlaces(mapped);
     } catch (err) {
@@ -386,26 +393,33 @@ export default function Explore() {
         elems = json.elements || [];
       }
 
-      const mapped: TouristPlace[] = elems.map((el: any) => ({
-        id: el.type + "/" + el.id,
-        name: el.tags?.name || "Unknown",
-        lat: el.lat ?? el.center?.lat,
-        lon: el.lon ?? el.center?.lon,
-        type: el.tags?.tourism || el.tags?.historic || "general",
-        state: STATE_NAME,
-        price:
-          el.tags?.tourism === "museum"
-            ? "₹50 – ₹200"
-            : el.tags?.tourism === "attraction"
-              ? "₹20 – ₹500"
-              : el.tags?.tourism === "zoo"
-                ? "₹100 – ₹300"
-                : el.tags?.tourism === "theme_park"
-                  ? "₹500 – ₹1500"
-                  : el.tags?.tourism === "hotel"
-                    ? "Varies"
-                    : "Free / Nominal",
-      }));
+      const mapped: TouristPlace[] = elems
+        .map((el: any) => ({
+          id: el.type + "/" + el.id,
+          name: (el.tags?.name ?? "").trim(),
+          lat: el.lat ?? el.center?.lat,
+          lon: el.lon ?? el.center?.lon,
+          type: el.tags?.tourism || el.tags?.historic || "general",
+          state: STATE_NAME,
+          price:
+            el.tags?.tourism === "museum"
+              ? "₹50 – ₹200"
+              : el.tags?.tourism === "attraction"
+                ? "₹20 – ₹500"
+                : el.tags?.tourism === "zoo"
+                  ? "₹100 – ₹300"
+                  : el.tags?.tourism === "theme_park"
+                    ? "₹500 – ₹1500"
+                    : el.tags?.tourism === "hotel"
+                      ? "Varies"
+                      : "Free / Nominal",
+        }))
+        .filter(
+          (p: any) =>
+            p.name && p.name.length > 0 &&
+            Number.isFinite(p.lat) &&
+            Number.isFinite(p.lon),
+        );
       setPlaces(mapped);
     } catch (e) {
       setPlaces([]);
