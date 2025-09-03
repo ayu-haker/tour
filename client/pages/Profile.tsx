@@ -95,9 +95,17 @@ export default function Profile() {
       }
       setLoadingReqs(true);
       try {
-        const r = await fetch("/api/requests", { signal: controller.signal });
-        if (!r.ok) throw new Error("bad status");
-        const all = (await r.json()) as any[];
+        const doFetch = async (url: string) => {
+          const r = await fetch(url, { signal: controller.signal });
+          if (!r.ok) throw new Error("bad status");
+          return (await r.json()) as any[];
+        };
+        let all: any[] = [];
+        try {
+          all = await doFetch("/api/requests");
+        } catch {
+          all = await doFetch("/.netlify/functions/api/requests");
+        }
         const mine = all.filter((x) => myRequests.includes(String(x.id)));
         setReqs(mine);
       } catch {
