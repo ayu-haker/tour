@@ -107,6 +107,13 @@ export default function Index() {
             to="/spots"
             icon={<MapPin className="h-5 w-5" />}
           />
+          <ServiceCard
+            title="Scanner"
+            count="QR"
+            desc="Scan QR codes at tourist spots"
+            to="/scanner"
+            icon={<QrCode className="h-5 w-5" />}
+          />
         </div>
       </section>
 
