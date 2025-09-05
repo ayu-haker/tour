@@ -20,6 +20,7 @@ const nav = [
   { to: "/hospitals", label: "Hospitals" },
   { to: "/transport", label: "Transport" },
   { to: "/spots", label: "Tourist Spots" },
+  { to: "/scanner", label: "Scanner" },
   { to: "/budget", label: "Budget Planner" },
   { to: "/memories", label: "Memories" },
   { to: "/partner", label: "Partner" },
