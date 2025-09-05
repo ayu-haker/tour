@@ -65,6 +65,20 @@ export default function Index() {
         </div>
         <div className="grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
           <ServiceCard
+            title="Flight Booking"
+            count="Live fares"
+            desc="Search and book flights with live updates"
+            to="/flights"
+            icon={<Plane className="h-5 w-5" />}
+          />
+          <ServiceCard
+            title="Train Booking"
+            count="Live availability"
+            desc="Find trains and check seat availability"
+            to="/trains"
+            icon={<Train className="h-5 w-5" />}
+          />
+          <ServiceCard
             title="Hotel Booking"
             count="100+ hotels"
             desc="Find and book perfect accommodation"
