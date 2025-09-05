@@ -126,6 +126,7 @@ export default function Index() {
             { label: "Scanner", to: "/scanner" },
             { label: "Budget Planner", to: "/budget" },
             { label: "Emergency", to: "/emergency" },
+            { label: "UPI Payment", to: "/upi" },
             { label: "Profile", to: "/profile" },
             { label: "Support", to: "/support" },
           ].map((q) => (
