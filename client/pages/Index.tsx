@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SiteLayout } from "@/components/layout/SiteLayout";
-import { Bed, Car, Utensils, MapPin, Plane, Train } from "lucide-react";
+import { Bed, Car, Utensils, MapPin, Plane, Train, QrCode } from "lucide-react";
 import AssistantWidget from "@/components/chat/AssistantWidget";
 
 export default function Index() {
