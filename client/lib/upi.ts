@@ -18,7 +18,8 @@ export function buildUpiUri(p: UpiPayload) {
   const params = new URLSearchParams();
   params.set("pa", p.pa.trim());
   if (p.pn) params.set("pn", p.pn.trim());
-  if (p.am !== undefined && p.am !== null && String(p.am).trim() !== "") params.set("am", String(p.am));
+  if (p.am !== undefined && p.am !== null && String(p.am).trim() !== "")
+    params.set("am", String(p.am));
   if (p.tn) params.set("tn", p.tn);
   if (p.tr) params.set("tr", p.tr);
   params.set("cu", p.cu || "INR");

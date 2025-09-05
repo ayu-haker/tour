@@ -2,7 +2,13 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { BookingForm } from "@/components/booking/BookingForm";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +40,11 @@ async function fetchFlights(q: { from: string; to: string; date: string }) {
 export default function Flights() {
   const { toast } = useToast();
   const [cls, setCls] = useState("economy");
-  const [query, setQuery] = useState<{ from: string; to: string; date: string } | null>(null);
+  const [query, setQuery] = useState<{
+    from: string;
+    to: string;
+    date: string;
+  } | null>(null);
 
   const [live, setLive] = useState(true);
   const { data, isFetching, isError } = useQuery({
@@ -55,7 +65,10 @@ export default function Flights() {
   }
 
   async function book(opt: TransportOption) {
-    toast({ title: "Booking created", description: `${opt.provider} ${opt.code} • ₹${opt.price.toLocaleString("en-IN")}` });
+    toast({
+      title: "Booking created",
+      description: `${opt.provider} ${opt.code} • ₹${opt.price.toLocaleString("en-IN")}`,
+    });
     try {
       const r = await fetch("/api/requests", {
         method: "POST",
@@ -98,7 +111,9 @@ export default function Flights() {
               </Select>
             </div>
             <div className="sm:col-span-2 flex items-center justify-between">
-              <div className="text-xs text-muted-foreground">Live updates every 3s</div>
+              <div className="text-xs text-muted-foreground">
+                Live updates every 3s
+              </div>
               <div className="flex items-center gap-2">
                 <Label htmlFor="live">Live</Label>
                 <Switch id="live" checked={live} onCheckedChange={setLive} />
@@ -107,32 +122,65 @@ export default function Flights() {
           </BookingForm>
         </div>
         <div className="lg:col-span-2 grid gap-3">
-          {isError && <div className="text-red-600">Failed to load flights</div>}
-          {!query && <div className="text-muted-foreground">Enter search details to see flights.</div>}
+          {isError && (
+            <div className="text-red-600">Failed to load flights</div>
+          )}
+          {!query && (
+            <div className="text-muted-foreground">
+              Enter search details to see flights.
+            </div>
+          )}
           {query && (
-            <div className="text-sm text-muted-foreground">{query.from} → {query.to} on {new Date(query.date).toDateString()}</div>
+            <div className="text-sm text-muted-foreground">
+              {query.from} → {query.to} on {new Date(query.date).toDateString()}
+            </div>
           )}
           {(data || []).map((opt) => (
             <Card key={opt.id} className="overflow-hidden">
               <CardHeader className="py-3">
                 <div className="flex items-center justify-between">
-                  <div className="font-medium">{opt.provider} <span className="text-muted-foreground">{opt.code}</span></div>
+                  <div className="font-medium">
+                    {opt.provider}{" "}
+                    <span className="text-muted-foreground">{opt.code}</span>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={opt.seatsAvailable > 0 ? "default" : "secondary"}>{opt.seatsAvailable} seats</Badge>
-                    <Badge variant="outline">₹{opt.price.toLocaleString("en-IN")}</Badge>
+                    <Badge
+                      variant={opt.seatsAvailable > 0 ? "default" : "secondary"}
+                    >
+                      {opt.seatsAvailable} seats
+                    </Badge>
+                    <Badge variant="outline">
+                      ₹{opt.price.toLocaleString("en-IN")}
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="py-3">
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <div>
-                    <div className="text-lg font-semibold">{formatTime(opt.departTime)} → {formatTime(opt.arriveTime)}</div>
-                    <div className="text-muted-foreground">{formatDuration(opt.durationMinutes)}</div>
+                    <div className="text-lg font-semibold">
+                      {formatTime(opt.departTime)} →{" "}
+                      {formatTime(opt.arriveTime)}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {formatDuration(opt.durationMinutes)}
+                    </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => book(opt)} disabled={opt.seatsAvailable === 0 || isFetching}>Book</Button>
+                    <Button
+                      onClick={() => book(opt)}
+                      disabled={opt.seatsAvailable === 0 || isFetching}
+                    >
+                      Book
+                    </Button>
                     <Button variant="secondary" asChild>
-                      <a href={airlineUrl(opt.provider)} target="_blank" rel="noopener noreferrer">Airline site</a>
+                      <a
+                        href={airlineUrl(opt.provider)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Airline site
+                      </a>
                     </Button>
                   </div>
                 </div>

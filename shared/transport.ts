@@ -1,4 +1,10 @@
-export type SearchParams = { from: string; to: string; date: string; passengers?: number; class?: string };
+export type SearchParams = {
+  from: string;
+  to: string;
+  date: string;
+  passengers?: number;
+  class?: string;
+};
 
 export type TransportOption = {
   id: string;
@@ -49,7 +55,11 @@ function addMinutes(iso: string, minutes: number) {
   return d.toISOString();
 }
 
-export function generateOptions(kind: "flight" | "train", p: SearchParams, now = new Date()) {
+export function generateOptions(
+  kind: "flight" | "train",
+  p: SearchParams,
+  now = new Date(),
+) {
   const { from, to, date } = p;
   const baseSeed = hashStr(`${kind}|${from}|${to}|${date}`);
   // Vary with current 30s window for "real-time" feel
@@ -76,14 +86,21 @@ export function generateOptions(kind: "flight" | "train", p: SearchParams, now =
     const arrive = new Date(depart);
     arrive.setMinutes(arrive.getMinutes() + duration);
 
-    const basePrice = kind === "flight" ? 2000 + rand() * 12000 : 100 + rand() * 1500;
+    const basePrice =
+      kind === "flight" ? 2000 + rand() * 12000 : 100 + rand() * 1500;
     const surge = 0.85 + rand() * 0.6; // 0.85x - 1.45x
     const price = roundTo(basePrice * surge, 10);
 
     const seats = 0 + Math.floor(rand() * 60);
 
     const provider = providers[Math.floor(rand() * providers.length)];
-    const codePrefix = kind === "flight" ? provider.replace(/[^A-Z]/gi, "").slice(0, 2).toUpperCase() || "AI" : "TR";
+    const codePrefix =
+      kind === "flight"
+        ? provider
+            .replace(/[^A-Z]/gi, "")
+            .slice(0, 2)
+            .toUpperCase() || "AI"
+        : "TR";
     const code = `${codePrefix}${pad(100 + Math.floor(rand() * 900))}`;
 
     options.push({

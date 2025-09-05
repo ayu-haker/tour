@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { StationSearchForm } from "@/components/booking/StationSearchForm";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +40,9 @@ async function fetchTrains(q: { from: string; to: string; date: string }) {
 export default function Trains() {
   const { toast } = useToast();
   const [cls, setCls] = useState("sleeper");
-  const [irctcUser, setIrctcUser] = useState<string>(() => localStorage.getItem("irctc.username") || "");
+  const [irctcUser, setIrctcUser] = useState<string>(
+    () => localStorage.getItem("irctc.username") || "",
+  );
   const [query, setQuery] = useState<{
     from: string;
     to: string;
@@ -44,7 +52,8 @@ export default function Trains() {
 
   const { data, isFetching, isError } = useQuery({
     queryKey: ["trains", query],
-    queryFn: () => fetchTrains({ from: query!.from, to: query!.to, date: query!.date }),
+    queryFn: () =>
+      fetchTrains({ from: query!.from, to: query!.to, date: query!.date }),
     enabled: !!query,
     refetchInterval: 5000,
   });
@@ -67,15 +76,33 @@ export default function Trains() {
   }
 
   async function book(opt: TransportOption) {
-    toast({ title: "Booking created", description: `${opt.provider} ${opt.code} • ₹${opt.price.toLocaleString("en-IN")}` });
+    toast({
+      title: "Booking created",
+      description: `${opt.provider} ${opt.code} • ₹${opt.price.toLocaleString("en-IN")}`,
+    });
     await recordRequest("train", { ...opt, class: cls, query });
   }
 
   async function bookViaIrctc(opt: TransportOption) {
-    toast({ title: "Opening IRCTC", description: `${opt.provider} ${opt.code}` });
-    await recordRequest("train", { ...opt, class: cls, channel: "irctc", query });
-    localStorage.setItem("irctc.lastSearch", JSON.stringify({ query, opt, ts: Date.now() }));
-    window.open("https://www.irctc.co.in/nget/train-search", "_blank", "noopener,noreferrer");
+    toast({
+      title: "Opening IRCTC",
+      description: `${opt.provider} ${opt.code}`,
+    });
+    await recordRequest("train", {
+      ...opt,
+      class: cls,
+      channel: "irctc",
+      query,
+    });
+    localStorage.setItem(
+      "irctc.lastSearch",
+      JSON.stringify({ query, opt, ts: Date.now() }),
+    );
+    window.open(
+      "https://www.irctc.co.in/nget/train-search",
+      "_blank",
+      "noopener,noreferrer",
+    );
   }
 
   return (
@@ -95,42 +122,85 @@ export default function Trains() {
             }}
           />
           <Card>
-            <CardHeader><CardTitle>IRCTC</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>IRCTC</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-3">
               <div>
                 <Label htmlFor="irctcUser">IRCTC Username (optional)</Label>
-                <Input id="irctcUser" value={irctcUser} onChange={(e) => { setIrctcUser(e.target.value); localStorage.setItem("irctc.username", e.target.value); }} placeholder="your IRCTC user id" />
+                <Input
+                  id="irctcUser"
+                  value={irctcUser}
+                  onChange={(e) => {
+                    setIrctcUser(e.target.value);
+                    localStorage.setItem("irctc.username", e.target.value);
+                  }}
+                  placeholder="your IRCTC user id"
+                />
               </div>
-              <div className="text-xs text-muted-foreground">Use "Book via IRCTC" to continue on IRCTC with your selection. We’ll save details locally for quick checkout.</div>
+              <div className="text-xs text-muted-foreground">
+                Use "Book via IRCTC" to continue on IRCTC with your selection.
+                We’ll save details locally for quick checkout.
+              </div>
             </CardContent>
           </Card>
         </div>
         <div className="lg:col-span-2 grid gap-3">
           {isError && <div className="text-red-600">Failed to load trains</div>}
-          {!query && <div className="text-muted-foreground">Enter search details to see trains.</div>}
+          {!query && (
+            <div className="text-muted-foreground">
+              Enter search details to see trains.
+            </div>
+          )}
           {query && (
-            <div className="text-sm text-muted-foreground">{query.from} → {query.to} on {new Date(query.date).toDateString()}</div>
+            <div className="text-sm text-muted-foreground">
+              {query.from} → {query.to} on {new Date(query.date).toDateString()}
+            </div>
           )}
           {(data || []).map((opt) => (
             <Card key={opt.id} className="overflow-hidden">
               <CardHeader className="py-3">
                 <div className="flex items-center justify-between">
-                  <div className="font-medium">{opt.provider} <span className="text-muted-foreground">{opt.code}</span></div>
+                  <div className="font-medium">
+                    {opt.provider}{" "}
+                    <span className="text-muted-foreground">{opt.code}</span>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={opt.seatsAvailable > 0 ? "default" : "secondary"}>{opt.seatsAvailable} seats</Badge>
-                    <Badge variant="outline">₹{opt.price.toLocaleString("en-IN")}</Badge>
+                    <Badge
+                      variant={opt.seatsAvailable > 0 ? "default" : "secondary"}
+                    >
+                      {opt.seatsAvailable} seats
+                    </Badge>
+                    <Badge variant="outline">
+                      ₹{opt.price.toLocaleString("en-IN")}
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="py-3">
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <div>
-                    <div className="text-lg font-semibold">{formatTime(opt.departTime)} → {formatTime(opt.arriveTime)}</div>
-                    <div className="text-muted-foreground">{formatDuration(opt.durationMinutes)}</div>
+                    <div className="text-lg font-semibold">
+                      {formatTime(opt.departTime)} →{" "}
+                      {formatTime(opt.arriveTime)}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {formatDuration(opt.durationMinutes)}
+                    </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => book(opt)} disabled={opt.seatsAvailable === 0 || isFetching}>Book</Button>
-                    <Button variant="secondary" onClick={() => bookViaIrctc(opt)}>Book via IRCTC</Button>
+                    <Button
+                      onClick={() => book(opt)}
+                      disabled={opt.seatsAvailable === 0 || isFetching}
+                    >
+                      Book
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => bookViaIrctc(opt)}
+                    >
+                      Book via IRCTC
+                    </Button>
                   </div>
                 </div>
               </CardContent>

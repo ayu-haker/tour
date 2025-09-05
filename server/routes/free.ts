@@ -9,14 +9,19 @@ function wikiSearchUrl(q: string) {
   return u.toString();
 }
 
-export type WikiResult = { title: string; description?: string; url: string; thumbnail?: string } | null;
+export type WikiResult = {
+  title: string;
+  description?: string;
+  url: string;
+  thumbnail?: string;
+} | null;
 
 router.get("/wiki", async (req, res) => {
   try {
     const q = String(req.query.q || "").trim();
     if (!q) return res.json({ result: null });
     const sr = await fetch(wikiSearchUrl(q));
-    const sdata = await sr.json().catch(() => ({} as any));
+    const sdata = await sr.json().catch(() => ({}) as any);
     const page = sdata?.pages?.[0];
     if (!page) return res.json({ result: null });
     const title = page.title as string;
@@ -26,7 +31,9 @@ router.get("/wiki", async (req, res) => {
     const result: WikiResult = {
       title: data.title || title,
       description: data.extract || page.description || undefined,
-      url: data.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+      url:
+        data.content_urls?.desktop?.page ||
+        `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
       thumbnail: data.thumbnail?.source,
     };
     res.json({ result });

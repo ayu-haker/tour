@@ -11,7 +11,10 @@ function systemPrompt() {
 
 router.post("/", async (req, res) => {
   try {
-    const messages = (req.body?.messages ?? []) as { role: string; content: string }[];
+    const messages = (req.body?.messages ?? []) as {
+      role: string;
+      content: string;
+    }[];
     const key = process.env.OPENAI_API_KEY;
     if (key) {
       const r = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -28,7 +31,9 @@ router.post("/", async (req, res) => {
         }),
       });
       const data = await r.json();
-      const text = data?.choices?.[0]?.message?.content || "Sorry, I couldn't generate a reply.";
+      const text =
+        data?.choices?.[0]?.message?.content ||
+        "Sorry, I couldn't generate a reply.";
       return res.json({ reply: text });
     }
     const last = messages[messages.length - 1]?.content || "";

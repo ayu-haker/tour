@@ -1,12 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Bot, MessageCircle } from "lucide-react";
 
-type Msg = { role: "user" | "assistant"; content: string; actions?: { label: string; to: string; external?: boolean }[] };
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  actions?: { label: string; to: string; external?: boolean }[];
+};
 
 function buildReply(input: string): Msg {
   const q = input.toLowerCase();
@@ -18,9 +28,15 @@ function buildReply(input: string): Msg {
     acts.push({ label: "Open Flights", to: "/flights" });
   }
   if (q.includes("train") || q.includes("irctc")) {
-    chunks.push("Search trains with station suggestions, or continue on IRCTC.");
+    chunks.push(
+      "Search trains with station suggestions, or continue on IRCTC.",
+    );
     acts.push({ label: "Open Trains", to: "/trains" });
-    acts.push({ label: "Open IRCTC", to: "https://www.irctc.co.in/nget/train-search", external: true });
+    acts.push({
+      label: "Open IRCTC",
+      to: "https://www.irctc.co.in/nget/train-search",
+      external: true,
+    });
   }
   if (q.includes("hotel")) {
     chunks.push("Browse hotels by city, stars and price.");
@@ -34,7 +50,12 @@ function buildReply(input: string): Msg {
     chunks.push("Explore local food and delivery.");
     acts.push({ label: "Open Food", to: "/food" });
   }
-  if (q.includes("spot") || q.includes("tourist") || q.includes("places") || q.includes("sightseeing")) {
+  if (
+    q.includes("spot") ||
+    q.includes("tourist") ||
+    q.includes("places") ||
+    q.includes("sightseeing")
+  ) {
     chunks.push("Discover tourist spots and places to visit.");
     acts.push({ label: "Tourist Spots", to: "/spots" });
     acts.push({ label: "Explore Destinations", to: "/explore" });
@@ -103,17 +124,20 @@ function buildReply(input: string): Msg {
 
 export default function AssistantWidget() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([{
-    role: "assistant",
-    content: "Hi! I can guide you with flights, trains (IRCTC), hotels, cabs, food, tourist spots, explore and more. What do you need?",
-    actions: [
-      { label: "Flights (live)", to: "/flights" },
-      { label: "Trains (IRCTC)", to: "/trains" },
-      { label: "Tourist Spots", to: "/spots" },
-      { label: "Explore", to: "/explore" },
-      { label: "Hotels", to: "/hotels" },
-    ],
-  }]);
+  const [messages, setMessages] = useState<Msg[]>([
+    {
+      role: "assistant",
+      content:
+        "Hi! I can guide you with flights, trains (IRCTC), hotels, cabs, food, tourist spots, explore and more. What do you need?",
+      actions: [
+        { label: "Flights (live)", to: "/flights" },
+        { label: "Trains (IRCTC)", to: "/trains" },
+        { label: "Tourist Spots", to: "/spots" },
+        { label: "Explore", to: "/explore" },
+        { label: "Hotels", to: "/hotels" },
+      ],
+    },
+  ]);
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -128,22 +152,47 @@ export default function AssistantWidget() {
     setInput("");
     setMessages((m) => [...m, { role: "user", content: text }]);
     try {
-      let r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: text }] }) });
+      let r = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: text }] }),
+      });
       if (r.status === 404) {
-        r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: text }] }) });
+        r = await fetch("/api/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: [{ role: "user", content: text }] }),
+        });
       }
       const data = await r.json();
       const replyText = (data?.reply as string) || "";
       const actions = buildReply(text).actions;
-      setMessages((m) => [...m, { role: "assistant", content: replyText, actions }]);
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", content: replyText, actions },
+      ]);
 
       if (/(spot|tourist|place|sightseeing|explore)/i.test(text)) {
         let rw = await fetch(`/api/free/wiki?q=${encodeURIComponent(text)}`);
-        if (rw.status === 404) rw = await fetch(`/api/free/wiki?q=${encodeURIComponent(text)}`);
-        const w = await rw.json().catch(() => ({} as any));
-        const res = w?.result as { title: string; description?: string; url: string } | null;
+        if (rw.status === 404)
+          rw = await fetch(`/api/free/wiki?q=${encodeURIComponent(text)}`);
+        const w = await rw.json().catch(() => ({}) as any);
+        const res = w?.result as {
+          title: string;
+          description?: string;
+          url: string;
+        } | null;
         if (res) {
-          setMessages((m) => [...m, { role: "assistant", content: `${res.title}: ${res.description || ""}`.trim(), actions: [{ label: "Open on Wikipedia", to: res.url, external: true }] }]);
+          setMessages((m) => [
+            ...m,
+            {
+              role: "assistant",
+              content: `${res.title}: ${res.description || ""}`.trim(),
+              actions: [
+                { label: "Open on Wikipedia", to: res.url, external: true },
+              ],
+            },
+          ]);
         }
       }
     } catch {
@@ -155,38 +204,76 @@ export default function AssistantWidget() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button aria-label="Assistant" className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full shadow-lg" size="icon">
+        <Button
+          aria-label="Assistant"
+          className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full shadow-lg"
+          size="icon"
+        >
           <MessageCircle className="h-5 w-5" />
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-[min(32rem,100vw)] p-0">
         <SheetHeader className="p-4 border-b">
-          <SheetTitle className="flex items-center gap-2"><Bot className="h-5 w-5" /> Travel Assistant</SheetTitle>
+          <SheetTitle className="flex items-center gap-2">
+            <Bot className="h-5 w-5" /> Travel Assistant
+          </SheetTitle>
         </SheetHeader>
         <div className="flex h-full flex-col">
           <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((m, i) => (
-              <div key={i} className={m.role === "assistant" ? "ml-0 mr-10" : "ml-10 mr-0"}>
-                <div className={"rounded-lg border p-3 text-sm " + (m.role === "assistant" ? "bg-card" : "bg-muted")}>{m.content}</div>
+              <div
+                key={i}
+                className={m.role === "assistant" ? "ml-0 mr-10" : "ml-10 mr-0"}
+              >
+                <div
+                  className={
+                    "rounded-lg border p-3 text-sm " +
+                    (m.role === "assistant" ? "bg-card" : "bg-muted")
+                  }
+                >
+                  {m.content}
+                </div>
                 {m.actions && m.actions.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {m.actions.map((a, idx) => a.external ? (
-                      <a key={idx} href={a.to} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md border px-2 py-1 text-xs hover:bg-accent">{a.label}</a>
-                    ) : (
-                      <Button key={idx} variant="secondary" size="sm" asChild>
-                        <Link to={a.to} onClick={() => setOpen(false)}>{a.label}</Link>
-                      </Button>
-                    ))}
+                    {m.actions.map((a, idx) =>
+                      a.external ? (
+                        <a
+                          key={idx}
+                          href={a.to}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center rounded-md border px-2 py-1 text-xs hover:bg-accent"
+                        >
+                          {a.label}
+                        </a>
+                      ) : (
+                        <Button key={idx} variant="secondary" size="sm" asChild>
+                          <Link to={a.to} onClick={() => setOpen(false)}>
+                            {a.label}
+                          </Link>
+                        </Button>
+                      ),
+                    )}
                   </div>
                 )}
               </div>
             ))}
           </div>
           <div className="border-t p-3 grid gap-2">
-            <Textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about flights, trains, hotels..." rows={3} onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") send(); }} />
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about flights, trains, hotels..."
+              rows={3}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") send();
+              }}
+            />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Press Ctrl/Cmd+Enter to send</span>
-              <Button size="sm" onClick={send}>Send</Button>
+              <Button size="sm" onClick={send}>
+                Send
+              </Button>
             </div>
           </div>
         </div>
