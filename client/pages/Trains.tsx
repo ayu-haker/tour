@@ -73,7 +73,7 @@ export default function Trains() {
 
   async function bookViaIrctc(opt: TransportOption) {
     toast({ title: "Opening IRCTC", description: `${opt.provider} ${opt.code}` });
-    await recordRequest("train_irctc", { ...opt, class: cls, irctcUser, query });
+    await recordRequest("train", { ...opt, class: cls, channel: "irctc", query });
     localStorage.setItem("irctc.lastSearch", JSON.stringify({ query, opt, ts: Date.now() }));
     window.open("https://www.irctc.co.in/nget/train-search", "_blank", "noopener,noreferrer");
   }
