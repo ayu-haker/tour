@@ -21,6 +21,7 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
   app.use("/api/requests", requestsRouter);
+  app.use("/api", transportRouter);
 
   return app;
 }
