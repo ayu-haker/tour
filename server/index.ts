@@ -25,6 +25,7 @@ export function createServer() {
   app.use("/api/requests", requestsRouter);
   app.use("/api", transportRouter);
   app.use("/api/ai", aiRouter);
+  app.use("/api/free", freeRouter);
 
   return app;
 }
