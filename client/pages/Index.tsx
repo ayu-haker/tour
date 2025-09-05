@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { Bed, Car, Utensils, MapPin, Plane, Train } from "lucide-react";
+import AssistantWidget from "@/components/chat/AssistantWidget";
 
 export default function Index() {
   const navigate = useNavigate();
