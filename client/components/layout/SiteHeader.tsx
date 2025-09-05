@@ -106,6 +106,9 @@ export function SiteHeader() {
                   <Link to="/spots">Tourist Spots</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to="/scanner">Scanner</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/profile">Profile</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
