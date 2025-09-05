@@ -12,6 +12,8 @@ import { MoreVertical, Menu } from "lucide-react";
 
 const nav = [
   { to: "/", label: "Home" },
+  { to: "/flights", label: "Flight Booking" },
+  { to: "/trains", label: "Train Booking" },
   { to: "/hotels", label: "Hotel Booking" },
   { to: "/cabs", label: "Cab Booking" },
   { to: "/food", label: "Food Delivery" },
