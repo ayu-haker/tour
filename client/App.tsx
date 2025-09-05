@@ -26,6 +26,7 @@ import Login from "./pages/Login";
 import Memories from "./pages/Memories";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import Partner from "./pages/Partner";
+import UPI from "./pages/UPI";
 
 const queryClient = new QueryClient();
 
