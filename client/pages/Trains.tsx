@@ -34,25 +34,27 @@ async function fetchTrains(q: { from: string; to: string; date: string }) {
 export default function Trains() {
   const { toast } = useToast();
   const [cls, setCls] = useState("sleeper");
-  const [query, setQuery] = useState<{ from: string; to: string; date: string } | null>(null);
+  const [irctcUser, setIrctcUser] = useState<string>(() => localStorage.getItem("irctc.username") || "");
+  const [query, setQuery] = useState<{
+    from: string;
+    to: string;
+    date: string;
+    meta?: { fromStation: Station; toStation: Station };
+  } | null>(null);
 
   const { data, isFetching, isError } = useQuery({
     queryKey: ["trains", query],
-    queryFn: () => fetchTrains(query as any),
+    queryFn: () => fetchTrains({ from: query!.from, to: query!.to, date: query!.date }),
     enabled: !!query,
     refetchInterval: 5000,
   });
 
-  async function book(opt: TransportOption) {
-    toast({ title: "Booking created", description: `${opt.provider} ${opt.code} • ₹${opt.price.toLocaleString("en-IN")}` });
+  async function recordRequest(type: string, payload: any) {
     try {
       const r = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "train",
-          payload: { ...opt, class: cls },
-        }),
+        body: JSON.stringify({ type, payload }),
       });
       const data = await r.json();
       const MY_REQ_KEY = "tour.myRequests";
@@ -64,31 +66,44 @@ export default function Trains() {
     } catch {}
   }
 
+  async function book(opt: TransportOption) {
+    toast({ title: "Booking created", description: `${opt.provider} ${opt.code} • ₹${opt.price.toLocaleString("en-IN")}` });
+    await recordRequest("train", { ...opt, class: cls, query });
+  }
+
+  async function bookViaIrctc(opt: TransportOption) {
+    toast({ title: "Opening IRCTC", description: `${opt.provider} ${opt.code}` });
+    await recordRequest("train_irctc", { ...opt, class: cls, irctcUser, query });
+    localStorage.setItem("irctc.lastSearch", JSON.stringify({ query, opt, ts: Date.now() }));
+    window.open("https://www.irctc.co.in/nget/train-search", "_blank", "noopener,noreferrer");
+  }
+
   return (
     <SiteLayout>
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <BookingForm
+        <div className="lg:col-span-1 grid gap-4">
+          <StationSearchForm
             title="Train Search"
-            onSubmit={(f) => setQuery({ from: f.from, to: f.to, date: f.date })}
-          >
-            <div className="sm:col-span-2">
-              <Label>Class</Label>
-              <Select value={cls} onValueChange={setCls}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sleeper">Sleeper</SelectItem>
-                  <SelectItem value="3A">3A</SelectItem>
-                  <SelectItem value="2A">2A</SelectItem>
-                  <SelectItem value="1A">1A</SelectItem>
-                  <SelectItem value="chair">Chair Car</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="text-xs text-muted-foreground sm:col-span-2">Live updates every 5s</div>
-          </BookingForm>
+            onSubmit={(f) => {
+              setCls(f.className);
+              setQuery({
+                from: `${f.from.code} - ${f.from.name}`,
+                to: `${f.to.code} - ${f.to.name}`,
+                date: f.date,
+                meta: { fromStation: f.from, toStation: f.to },
+              });
+            }}
+          />
+          <Card>
+            <CardHeader><CardTitle>IRCTC</CardTitle></CardHeader>
+            <CardContent className="grid gap-3">
+              <div>
+                <Label htmlFor="irctcUser">IRCTC Username (optional)</Label>
+                <Input id="irctcUser" value={irctcUser} onChange={(e) => { setIrctcUser(e.target.value); localStorage.setItem("irctc.username", e.target.value); }} placeholder="your IRCTC user id" />
+              </div>
+              <div className="text-xs text-muted-foreground">Use "Book via IRCTC" to continue on IRCTC with your selection. We’ll save details locally for quick checkout.</div>
+            </CardContent>
+          </Card>
         </div>
         <div className="lg:col-span-2 grid gap-3">
           {isError && <div className="text-red-600">Failed to load trains</div>}
@@ -108,12 +123,15 @@ export default function Trains() {
                 </div>
               </CardHeader>
               <CardContent className="py-3">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between gap-2 text-sm">
                   <div>
                     <div className="text-lg font-semibold">{formatTime(opt.departTime)} → {formatTime(opt.arriveTime)}</div>
                     <div className="text-muted-foreground">{formatDuration(opt.durationMinutes)}</div>
                   </div>
-                  <Button onClick={() => book(opt)} disabled={opt.seatsAvailable === 0 || isFetching}>Book</Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => book(opt)} disabled={opt.seatsAvailable === 0 || isFetching}>Book</Button>
+                    <Button variant="secondary" onClick={() => bookViaIrctc(opt)}>Book via IRCTC</Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
