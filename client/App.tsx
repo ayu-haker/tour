@@ -70,6 +70,7 @@ const App = () => (
               }
             />
             <Route path="/support" element={<Support />} />
+            <Route path="/upi" element={<UPI />} />
             <Route
               path="/partner"
               element={
