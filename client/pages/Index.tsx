@@ -116,6 +116,7 @@ export default function Index() {
           {[
             { label: "Hospitals", to: "/hospitals" },
             { label: "Transport", to: "/transport" },
+            { label: "Scanner", to: "/scanner" },
             { label: "Budget Planner", to: "/budget" },
             { label: "Emergency", to: "/emergency" },
             { label: "Profile", to: "/profile" },
