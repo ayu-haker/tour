@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import type { TransportOption } from "../../shared/transport";
 import { loadJSON, saveJSON } from "@/lib/storage";
@@ -35,11 +37,12 @@ export default function Flights() {
   const [cls, setCls] = useState("economy");
   const [query, setQuery] = useState<{ from: string; to: string; date: string } | null>(null);
 
+  const [live, setLive] = useState(true);
   const { data, isFetching, isError } = useQuery({
-    queryKey: ["flights", query],
+    queryKey: ["flights", query, live],
     queryFn: () => fetchFlights(query as any),
     enabled: !!query,
-    refetchInterval: 5000,
+    refetchInterval: live ? 3000 : false,
   });
 
   async function book(opt: TransportOption) {
@@ -85,7 +88,13 @@ export default function Flights() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="text-xs text-muted-foreground sm:col-span-2">Live updates every 5s</div>
+            <div className="sm:col-span-2 flex items-center justify-between">
+              <div className="text-xs text-muted-foreground">Live updates every 3s</div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="live">Live</Label>
+                <Switch id="live" checked={live} onCheckedChange={setLive} />
+              </div>
+            </div>
           </BookingForm>
         </div>
         <div className="lg:col-span-2 grid gap-3">
