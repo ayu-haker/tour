@@ -44,6 +44,16 @@ export default function Flights() {
     refetchInterval: live ? 3000 : false,
   });
 
+  function airlineUrl(provider: string) {
+    const p = provider.toLowerCase();
+    if (p.includes("indigo")) return "https://www.goindigo.in/";
+    if (p.includes("air india")) return "https://www.airindia.com/";
+    if (p.includes("vistara")) return "https://www.airvistara.com/";
+    if (p.includes("spice")) return "https://www.spicejet.com/";
+    if (p.includes("akasa")) return "https://www.akasaair.com/";
+    return "https://www.google.com/travel/flights";
+  }
+
   async function book(opt: TransportOption) {
     toast({ title: "Booking created", description: `${opt.provider} ${opt.code} • ₹${opt.price.toLocaleString("en-IN")}` });
     try {
