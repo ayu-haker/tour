@@ -53,7 +53,8 @@ export function generateOptions(kind: "flight" | "train", p: SearchParams, now =
   const { from, to, date } = p;
   const baseSeed = hashStr(`${kind}|${from}|${to}|${date}`);
   // Vary with current 30s window for "real-time" feel
-  const timeSlice = Math.floor(now.getTime() / 30000);
+  const sliceMs = kind === "flight" ? 15000 : 30000;
+  const timeSlice = Math.floor(now.getTime() / sliceMs);
   const rand = seededRandom(baseSeed ^ timeSlice);
 
   const providers =
