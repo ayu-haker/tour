@@ -18,6 +18,7 @@ import Transport from "./pages/Transport";
 import Spots from "./pages/Spots";
 import Flights from "./pages/Flights";
 import Trains from "./pages/Trains";
+import Scanner from "./pages/Scanner";
 import Emergency from "./pages/Emergency";
 import Profile from "./pages/Profile";
 import Support from "./pages/Support";
