@@ -114,6 +114,13 @@ export default function Index() {
             to="/scanner"
             icon={<QrCode className="h-5 w-5" />}
           />
+          <ServiceCard
+            title="UPI Payment"
+            count="Free"
+            desc="Generate UPI link and QR to pay"
+            to="/upi"
+            icon={<IndianRupee className="h-5 w-5" />}
+          />
         </div>
       </section>
 
