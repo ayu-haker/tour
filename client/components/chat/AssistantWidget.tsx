@@ -114,13 +114,24 @@ export default function AssistantWidget() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, open]);
 
-  function send() {
+  async function send() {
     const text = input.trim();
     if (!text) return;
     setInput("");
     setMessages((m) => [...m, { role: "user", content: text }]);
-    const reply = buildReply(text);
-    setTimeout(() => setMessages((m) => [...m, reply]), 200);
+    try {
+      let r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: text }] }) });
+      if (r.status === 404) {
+        r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: text }] }) });
+      }
+      const data = await r.json();
+      const replyText = (data?.reply as string) || "";
+      const actions = buildReply(text).actions; // derive quick actions from user intent
+      setMessages((m) => [...m, { role: "assistant", content: replyText, actions }]);
+    } catch {
+      const fallback = buildReply(text);
+      setMessages((m) => [...m, fallback]);
+    }
   }
 
   return (
