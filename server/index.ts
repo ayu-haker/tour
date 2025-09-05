@@ -4,6 +4,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import requestsRouter from "./routes/requests";
 import transportRouter from "./routes/transport";
+import aiRouter from "./routes/ai";
 
 export function createServer() {
   const app = express();
