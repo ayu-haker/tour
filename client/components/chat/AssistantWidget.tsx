@@ -34,6 +34,35 @@ function buildReply(input: string): Msg {
     chunks.push("Explore local food and delivery.");
     acts.push({ label: "Open Food", to: "/food" });
   }
+  if (q.includes("spot") || q.includes("tourist") || q.includes("places") || q.includes("sightseeing")) {
+    chunks.push("Discover tourist spots and places to visit.");
+    acts.push({ label: "Tourist Spots", to: "/spots" });
+    acts.push({ label: "Explore Destinations", to: "/explore" });
+  }
+  if (q.includes("explore")) {
+    chunks.push("Browse destinations, routes and ideas.");
+    acts.push({ label: "Explore Destinations", to: "/explore" });
+  }
+  if (q.includes("hospital") || q.includes("medical")) {
+    chunks.push("Find nearby hospitals and clinics.");
+    acts.push({ label: "Hospitals", to: "/hospitals" });
+  }
+  if (q.includes("transport")) {
+    chunks.push("Check transport options and info.");
+    acts.push({ label: "Transport", to: "/transport" });
+  }
+  if (q.includes("profile") || q.includes("account")) {
+    acts.push({ label: "Profile", to: "/profile" });
+  }
+  if (q.includes("support") || q.includes("contact")) {
+    acts.push({ label: "Support", to: "/support" });
+  }
+  if (q.includes("memories") || q.includes("photos")) {
+    acts.push({ label: "Memories", to: "/memories" });
+  }
+  if (q.includes("partner")) {
+    acts.push({ label: "Partner", to: "/partner" });
+  }
   if (q.includes("budget")) {
     chunks.push("Plan your trip costs.");
     acts.push({ label: "Open Budget Planner", to: "/budget" });
@@ -50,8 +79,14 @@ function buildReply(input: string): Msg {
       { label: "Hotels", to: "/hotels" },
       { label: "Cabs", to: "/cabs" },
       { label: "Food", to: "/food" },
+      { label: "Tourist Spots", to: "/spots" },
+      { label: "Explore", to: "/explore" },
+      { label: "Hospitals", to: "/hospitals" },
+      { label: "Transport", to: "/transport" },
       { label: "Budget", to: "/budget" },
       { label: "Emergency", to: "/emergency" },
+      { label: "Profile", to: "/profile" },
+      { label: "Support", to: "/support" },
     );
   }
 
@@ -62,10 +97,12 @@ export default function AssistantWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([{
     role: "assistant",
-    content: "Hi! I can guide you with flights, trains (IRCTC), hotels, cabs, food, and more. What do you need?",
+    content: "Hi! I can guide you with flights, trains (IRCTC), hotels, cabs, food, tourist spots, explore and more. What do you need?",
     actions: [
       { label: "Flights (live)", to: "/flights" },
       { label: "Trains (IRCTC)", to: "/trains" },
+      { label: "Tourist Spots", to: "/spots" },
+      { label: "Explore", to: "/explore" },
       { label: "Hotels", to: "/hotels" },
     ],
   }]);
