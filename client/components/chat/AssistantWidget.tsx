@@ -67,6 +67,10 @@ function buildReply(input: string): Msg {
     chunks.push("Plan your trip costs.");
     acts.push({ label: "Open Budget Planner", to: "/budget" });
   }
+  if (q.includes("scanner") || q.includes("scan") || q.includes("qr")) {
+    chunks.push("Open the QR scanner to scan tourist spot codes.");
+    acts.push({ label: "Open Scanner", to: "/scanner" });
+  }
   if (q.includes("emergency") || q.includes("help")) {
     chunks.push("Emergency contacts and resources are available.");
     acts.push({ label: "Open Emergency", to: "/emergency" });
