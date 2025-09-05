@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SiteLayout } from "@/components/layout/SiteLayout";
-import { Bed, Car, Utensils, MapPin } from "lucide-react";
+import { Bed, Car, Utensils, MapPin, Plane, Train } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
