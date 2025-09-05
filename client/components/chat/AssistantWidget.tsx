@@ -126,8 +126,18 @@ export default function AssistantWidget() {
       }
       const data = await r.json();
       const replyText = (data?.reply as string) || "";
-      const actions = buildReply(text).actions; // derive quick actions from user intent
+      const actions = buildReply(text).actions;
       setMessages((m) => [...m, { role: "assistant", content: replyText, actions }]);
+
+      if (/(spot|tourist|place|sightseeing|explore)/i.test(text)) {
+        let rw = await fetch(`/api/free/wiki?q=${encodeURIComponent(text)}`);
+        if (rw.status === 404) rw = await fetch(`/api/free/wiki?q=${encodeURIComponent(text)}`);
+        const w = await rw.json().catch(() => ({} as any));
+        const res = w?.result as { title: string; description?: string; url: string } | null;
+        if (res) {
+          setMessages((m) => [...m, { role: "assistant", content: `${res.title}: ${res.description || ""}`.trim(), actions: [{ label: "Open on Wikipedia", to: res.url, external: true }] }]);
+        }
+      }
     } catch {
       const fallback = buildReply(text);
       setMessages((m) => [...m, fallback]);
