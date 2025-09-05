@@ -16,6 +16,8 @@ import Food from "./pages/Food";
 import Hospitals from "./pages/Hospitals";
 import Transport from "./pages/Transport";
 import Spots from "./pages/Spots";
+import Flights from "./pages/Flights";
+import Trains from "./pages/Trains";
 import Emergency from "./pages/Emergency";
 import Profile from "./pages/Profile";
 import Support from "./pages/Support";
