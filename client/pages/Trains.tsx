@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/layout/SiteLayout";
-import { BookingForm } from "@/components/booking/BookingForm";
+import { StationSearchForm } from "@/components/booking/StationSearchForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { TransportOption } from "../../shared/transport";
 import { loadJSON, saveJSON } from "@/lib/storage";
+import type { Station } from "@/data/stations";
 
 function formatTime(iso: string) {
   const d = new Date(iso);
