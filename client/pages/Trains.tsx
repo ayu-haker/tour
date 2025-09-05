@@ -31,10 +31,12 @@ function formatDuration(mins: number) {
 
 async function fetchTrains(q: { from: string; to: string; date: string }) {
   const params = new URLSearchParams(q as any).toString();
-  let r = await fetch(`/api/trains/search?${params}`);
-  if (r.status === 404) r = await fetch(`/api/trains?${params}`);
+  let r = await fetch(`/api/trains?${params}`);
+  let okJson = r.ok && (r.headers.get("content-type") || "").includes("application/json");
+  if (!okJson) r = await fetch(`/api/trains/search?${params}`);
   if (!r.ok) throw new Error("failed");
-  return (await r.json()) as TransportOption[];
+  const txt = await r.text();
+  try { return JSON.parse(txt) as TransportOption[]; } catch { throw new Error("bad-json"); }
 }
 
 export default function Trains() {
