@@ -5,6 +5,7 @@ import { handleDemo } from "./routes/demo";
 import requestsRouter from "./routes/requests";
 import transportRouter from "./routes/transport";
 import aiRouter from "./routes/ai";
+import freeRouter from "./routes/free";
 
 export function createServer() {
   const app = express();
