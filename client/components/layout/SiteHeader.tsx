@@ -113,6 +113,9 @@ export function SiteHeader() {
                   <Link to="/upi">UPI Payment</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to="/support">Support</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/profile">Profile</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
