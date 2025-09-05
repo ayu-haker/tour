@@ -54,6 +54,10 @@ function buildReply(input: string): Msg {
   if (q.includes("profile") || q.includes("account")) {
     acts.push({ label: "Profile", to: "/profile" });
   }
+  if (q.includes("upi") || q.includes("payment") || q.includes("pay")) {
+    chunks.push("Generate a UPI link and QR to pay.");
+    acts.push({ label: "UPI Payment", to: "/upi" });
+  }
   if (q.includes("support") || q.includes("contact")) {
     acts.push({ label: "Support", to: "/support" });
   }
