@@ -87,6 +87,12 @@ export function SiteHeader() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
+                  <Link to="/flights">Flight Booking</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/trains">Train Booking</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/hotels">Hotel Booking</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
