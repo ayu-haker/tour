@@ -30,11 +30,13 @@ function formatDuration(mins: number) {
 
 async function fetchFlights(q: { from: string; to: string; date: string }) {
   const params = new URLSearchParams(q as any).toString();
-  // Try express route first, then vercel edge fallback
-  let r = await fetch(`/api/flights/search?${params}`);
-  if (r.status === 404) r = await fetch(`/api/flights?${params}`);
+  // Try Vercel Edge first, then Express fallback
+  let r = await fetch(`/api/flights?${params}`);
+  let okJson = r.ok && (r.headers.get("content-type") || "").includes("application/json");
+  if (!okJson) r = await fetch(`/api/flights/search?${params}`);
   if (!r.ok) throw new Error("failed");
-  return (await r.json()) as TransportOption[];
+  const txt = await r.text();
+  try { return JSON.parse(txt) as TransportOption[]; } catch { throw new Error("bad-json"); }
 }
 
 export default function Flights() {
