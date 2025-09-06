@@ -280,7 +280,7 @@ export default function Explore() {
           state: STATE_NAME,
           price:
             el.tags?.tourism === "museum"
-              ? "₹50 – ₹200"
+              ? "₹50 – ���200"
               : el.tags?.tourism === "attraction"
                 ? "₹20 – ₹500"
                 : el.tags?.tourism === "zoo"
@@ -383,11 +383,7 @@ export default function Explore() {
         );
         out center tags;
         `;
-        response = await fetch("https://overpass-api.de/api/interpreter", {
-          method: "POST",
-          body: aroundQuery,
-        });
-        json = await response.json();
+        json = await fetchOverpass(aroundQuery);
         elems = json.elements || [];
       }
 
