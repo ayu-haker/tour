@@ -1,16 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/spa",
-        "buildCommand": "npm run build:client"
-      }
-    },
-    { "src": "api/**/*.ts", "use": "@vercel/edge" }
-  ],
+  "buildCommand": "npm run build:client",
+  "outputDirectory": "dist/spa",
+  "functions": {
+    "api/**/*.ts": { "runtime": "edge" }
+  },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "handle": "filesystem" },
