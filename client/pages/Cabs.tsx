@@ -153,7 +153,7 @@ export default function Cabs() {
         setActive("drop");
         setLocLoading(false);
       },
-      (err) => {
+      async (err) => {
         if (err.code === err.PERMISSION_DENIED)
           setLocError(
             "Permission denied. Enable location access in your browser settings.",
@@ -163,6 +163,22 @@ export default function Cabs() {
         else if (err.code === err.TIMEOUT)
           setLocError("Timed out while getting location. Try again.");
         else setLocError("Unable to get your location.");
+        // Fallback to approximate IP location
+        try {
+          const ipr = await fetch("https://ipapi.co/json/");
+          const ipd = await ipr.json().catch(() => ({} as any));
+          const lat = Number(ipd.latitude);
+          const lon = Number(ipd.longitude);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            const p: [number, number] = [lat, lon];
+            setPickup(p);
+            if (!pickupText) setPickupText("Approx. location");
+            setActive("drop");
+            setLocError(
+              "Using approximate location based on IP (may be inaccurate).",
+            );
+          }
+        } catch {}
         setLocLoading(false);
       },
       { enableHighAccuracy: true, maximumAge: 60_000, timeout: 10_000 },
