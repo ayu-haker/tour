@@ -245,8 +245,15 @@ export default function Explore() {
 
   async function fetchOverpass(query: string) {
     // Try primary, then fallback mirror
-    let r = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
-    if (!r.ok) r = await fetch("https://overpass.kumi.systems/api/interpreter", { method: "POST", body: query });
+    let r = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      body: query,
+    });
+    if (!r.ok)
+      r = await fetch("https://overpass.kumi.systems/api/interpreter", {
+        method: "POST",
+        body: query,
+      });
     if (!r.ok) throw new Error("overpass-failed");
     return r.json();
   }
@@ -456,7 +463,7 @@ export default function Explore() {
         // Fallback to approximate IP location
         try {
           const ipr = await fetch("https://ipapi.co/json/");
-          const ipd = await ipr.json().catch(() => ({} as any));
+          const ipd = await ipr.json().catch(() => ({}) as any);
           const lat = Number(ipd.latitude);
           const lon = Number(ipd.longitude);
           if (Number.isFinite(lat) && Number.isFinite(lon)) {

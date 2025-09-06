@@ -166,7 +166,7 @@ export default function Cabs() {
         // Fallback to approximate IP location
         try {
           const ipr = await fetch("https://ipapi.co/json/");
-          const ipd = await ipr.json().catch(() => ({} as any));
+          const ipd = await ipr.json().catch(() => ({}) as any);
           const lat = Number(ipd.latitude);
           const lon = Number(ipd.longitude);
           if (Number.isFinite(lat) && Number.isFinite(lon)) {
