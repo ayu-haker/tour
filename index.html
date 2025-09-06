@@ -8,11 +8,15 @@
       (function () {
         try {
           var t = localStorage.getItem("theme") || "system";
-          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
           var root = document.documentElement;
           root.classList.remove("light", "dark");
-          if (t === "dark" || (t === "system" && prefersDark)) root.classList.add("dark");
-          if (t === "light" || (t === "system" && !prefersDark)) root.classList.add("light");
+          if (t === "dark" || (t === "system" && prefersDark))
+            root.classList.add("dark");
+          if (t === "light" || (t === "system" && !prefersDark))
+            root.classList.add("light");
         } catch (e) {}
       })();
     </script>

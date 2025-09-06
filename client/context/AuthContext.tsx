@@ -1,4 +1,11 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 export type User = { id: string; email: string; name?: string } | null;
 
@@ -26,13 +33,18 @@ function safeParseUser(raw: string | null): User {
 function genId(): string {
   try {
     // @ts-ignore
-    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    if (
+      typeof crypto !== "undefined" &&
+      typeof crypto.randomUUID === "function"
+    ) {
       // @ts-ignore
       return crypto.randomUUID();
     }
   } catch {}
   return (
-    Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2)
+    Math.random().toString(36).slice(2) +
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2)
   );
 }
 
@@ -50,13 +62,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
     else localStorage.removeItem(STORAGE_KEY);
   }, [user]);
 
-  const value = useMemo<AuthContextType>(() => ({
-    user,
-    async login(email: string) {
-      setUser({ id: genId(), email });
-    },
-    logout() { setUser(null); },
-  }), [user]);
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      async login(email: string) {
+        setUser({ id: genId(), email });
+      },
+      logout() {
+        setUser(null);
+      },
+    }),
+    [user],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

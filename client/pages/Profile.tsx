@@ -73,10 +73,14 @@ export default function Profile() {
 
   function applyTheme(t: "system" | "light" | "dark") {
     const root = document.documentElement;
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
     root.classList.remove("light", "dark");
-    if (t === "dark" || (t === "system" && prefersDark)) root.classList.add("dark");
-    if (t === "light" || (t === "system" && !prefersDark)) root.classList.add("light");
+    if (t === "dark" || (t === "system" && prefersDark))
+      root.classList.add("dark");
+    if (t === "light" || (t === "system" && !prefersDark))
+      root.classList.add("light");
     localStorage.setItem("theme", t);
   }
 
