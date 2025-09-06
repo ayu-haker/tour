@@ -320,11 +320,7 @@ export default function Explore() {
       );
       out center tags;
       `;
-      const res = await fetch("https://overpass-api.de/api/interpreter", {
-        method: "POST",
-        body: query,
-      });
-      const json = await res.json();
+      const json = await fetchOverpass(query);
       const raw: CityOption[] = (json.elements || [])
         .map((el: any) => ({
           name: el.tags?.name,
