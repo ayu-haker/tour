@@ -73,28 +73,26 @@ export default function Profile() {
 
   function applyTheme(t: "system" | "light" | "dark") {
     const root = document.documentElement;
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     root.classList.remove("light", "dark");
-    if (t === "dark") root.classList.add("dark");
-    if (t === "light") root.classList.add("light");
+    if (t === "dark" || (t === "system" && prefersDark)) root.classList.add("dark");
+    if (t === "light" || (t === "system" && !prefersDark)) root.classList.add("light");
     localStorage.setItem("theme", t);
   }
 
   useEffect(() => {
-    // apply saved theme on mount
     applyTheme(prof.theme);
   }, []);
 
   useEffect(() => {
-    // Force dark theme while on Profile for better 3D contrast, then restore on unmount
     const root = document.documentElement;
-    const hadLight = root.classList.contains("light");
-    const hadDark = root.classList.contains("dark");
+    const prevLight = root.classList.contains("light");
+    const prevDark = root.classList.contains("dark");
     root.classList.add("dark");
     root.classList.remove("light");
     return () => {
-      // restore the user's preference
-      if (hadLight && !hadDark) applyTheme("light");
-      else if (!hadLight && hadDark) applyTheme("dark");
+      if (prevLight && !prevDark) applyTheme("light");
+      else if (!prevLight && prevDark) applyTheme("dark");
       else applyTheme(prof.theme);
     };
   }, []);
