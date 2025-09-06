@@ -243,6 +243,14 @@ export default function Explore() {
     persist(next);
   }
 
+  async function fetchOverpass(query: string) {
+    // Try primary, then fallback mirror
+    let r = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
+    if (!r.ok) r = await fetch("https://overpass.kumi.systems/api/interpreter", { method: "POST", body: query });
+    if (!r.ok) throw new Error("overpass-failed");
+    return r.json();
+  }
+
   const fetchTouristPlaces = async (STATE_NAME: string) => {
     setLoading(true);
     setPlaces([]);
@@ -260,11 +268,7 @@ export default function Explore() {
     `;
 
     try {
-      const response = await fetch("https://overpass-api.de/api/interpreter", {
-        method: "POST",
-        body: query,
-      });
-      const json = await response.json();
+      const json = await fetchOverpass(query);
 
       const mapped: TouristPlace[] = json.elements
         .map((el: any) => ({
