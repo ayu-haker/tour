@@ -368,11 +368,7 @@ export default function Explore() {
       );
       out center tags;
       `;
-      let response = await fetch("https://overpass-api.de/api/interpreter", {
-        method: "POST",
-        body: boundaryQuery,
-      });
-      let json = await response.json();
+      let json = await fetchOverpass(boundaryQuery);
       let elems: any[] = json.elements || [];
 
       if (!elems.length && cityCenter) {
