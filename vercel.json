@@ -2,9 +2,6 @@
   "version": 2,
   "buildCommand": "npm run build:client",
   "outputDirectory": "dist/spa",
-  "functions": {
-    "api/**/*.ts": { "runtime": "edge" }
-  },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "handle": "filesystem" },
