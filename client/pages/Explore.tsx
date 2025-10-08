@@ -244,18 +244,43 @@ export default function Explore() {
   }
 
   async function fetchOverpass(query: string) {
-    // Try primary, then fallback mirror
-    let r = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      body: query,
-    });
-    if (!r.ok)
-      r = await fetch("https://overpass.kumi.systems/api/interpreter", {
-        method: "POST",
-        body: query,
-      });
-    if (!r.ok) throw new Error("overpass-failed");
-    return r.json();
+    const mirrors = [
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.kumi.systems/api/interpreter",
+      "https://overpass.zbycz.uk/api/interpreter",
+      "https://overpass.nchc.org.tw/api/interpreter",
+    ];
+
+    let lastErr: any = null;
+    for (const url of mirrors) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            Accept: "application/json",
+          },
+          body: new URLSearchParams({ data: query }),
+        });
+        if (!res.ok) {
+          lastErr = new Error(`overpass-status-${res.status}`);
+          continue;
+        }
+        const text = await res.text();
+        try {
+          const json = JSON.parse(text);
+          return json;
+        } catch (e) {
+          // Not JSON (often XML/HTML error page). Try next mirror.
+          lastErr = e;
+          continue;
+        }
+      } catch (e) {
+        lastErr = e;
+        continue;
+      }
+    }
+    throw lastErr || new Error("overpass-failed");
   }
 
   const fetchTouristPlaces = async (STATE_NAME: string) => {
@@ -702,7 +727,7 @@ export default function Explore() {
                         Entry Fee: {place.price}
                       </p>
                       <p className="text-xs">
-                        ���� Lat: {place.lat}, Lon: {place.lon}
+                        📍 Lat: {place.lat}, Lon: {place.lon}
                       </p>
                       {userLoc && (
                         <p className="text-xs mt-1">
