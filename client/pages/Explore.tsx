@@ -15,7 +15,12 @@ import { loadJSON, saveJSON } from "@/lib/storage";
 import { Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
-import { LeafletMap, MapMarker } from "@/components/maps/LeafletMap";
+import React from "react";
+import type { MapMarker } from "@/components/maps/LeafletMap";
+import { useIsMobile } from "@/hooks/use-mobile";
+const LeafletMap = React.lazy(() =>
+  import("@/components/maps/LeafletMap").then((m) => ({ default: m.LeafletMap })),
+);
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -153,6 +158,8 @@ function Rating({
 }
 
 export default function Explore() {
+  const isMobile = useIsMobile();
+  const LIMIT = isMobile ? 50 : 100;
   const [places, setPlaces] = useState<TouristPlace[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedState, setSelectedState] = useState("");
@@ -198,7 +205,7 @@ export default function Explore() {
   const distanceMap = useMemo(() => {
     const out: Record<string, number> = {};
     if (!userLoc) return out;
-    for (const p of places.slice(0, 100)) {
+    for (const p of places.slice(0, LIMIT)) {
       out[p.id] = haversine(userLoc, [p.lat, p.lon]);
     }
     return out;
@@ -579,7 +586,7 @@ export default function Explore() {
   const markers: MapMarker[] = useMemo(() => {
     const m: MapMarker[] = [];
     if (userLoc) m.push({ id: "me", position: userLoc, title: "You" });
-    for (const p of places.slice(0, 100))
+    for (const p of places.slice(0, LIMIT))
       m.push({
         id: p.id,
         position: [p.lat, p.lon],
@@ -703,7 +710,7 @@ export default function Explore() {
           {!loading && places.length > 0 && (
             <>
               <p>
-                Showing first {places.slice(0, 100).length} results for{" "}
+                Showing first {places.slice(0, LIMIT).length} results for{" "}
                 <b>{selectedState}</b>{" "}
                 {selectedCity && (
                   <>
@@ -712,7 +719,7 @@ export default function Explore() {
                 )}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                {places.slice(0, 100).map((place) => {
+                {places.slice(0, LIMIT).map((place) => {
                   const d = distanceMap[place.id];
                   return (
                     <div
@@ -769,7 +776,10 @@ export default function Explore() {
                 <CardTitle>Map</CardTitle>
               </CardHeader>
               <CardContent>
-                <LeafletMap
+                <React.Suspense
+                  fallback={<div className="h-[50vh] md:h-[65vh] rounded-md border grid place-items-center text-sm text-muted-foreground">Loading map…</div>}
+                >
+                  <LeafletMap
                   center={
                     (userLoc ||
                       (selectedCity &&
@@ -793,8 +803,9 @@ export default function Explore() {
                       ? [userLoc, [selectedForRoute.lat, selectedForRoute.lon]]
                       : undefined
                   }
-                  className="h-[65vh]"
+                  className={isMobile ? "h-[50vh]" : "h-[65vh]"}
                 />
+                </React.Suspense>
                 {routeLoading && (
                   <p className="text-xs text-muted-foreground mt-2">
                     Calculating route…
@@ -823,6 +834,8 @@ export default function Explore() {
                 src={pendingPhoto}
                 alt="Preview"
                 className="w-full max-h-60 object-contain rounded-md border"
+                loading="lazy"
+                decoding="async"
               />
             )}
             <div>
@@ -881,6 +894,8 @@ export default function Explore() {
                         src={r.dataUrl}
                         alt={r.title}
                         className="w-full h-40 object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-full h-40 grid place-items-center text-sm text-muted-foreground border-b">
