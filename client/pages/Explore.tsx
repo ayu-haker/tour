@@ -277,32 +277,58 @@ export default function Explore() {
     try {
       const json = await fetchOverpass(query);
 
-      const mapped: TouristPlace[] = json.elements
-        .map((el: any) => ({
-          id: el.type + "/" + el.id,
-          name: (el.tags?.name ?? "").trim(),
-          lat: el.lat ?? el.center?.lat,
-          lon: el.lon ?? el.center?.lon,
-          type: el.tags?.tourism || el.tags?.historic || "general",
-          state: STATE_NAME,
-          price:
+      const mapped: TouristPlace[] = (json.elements || [])
+        .map((el: any) => {
+          const tourism = String(el.tags?.tourism || "").toLowerCase();
+          const amenity = String(el.tags?.amenity || "").toLowerCase();
+          const name = (el.tags?.name ?? "").trim();
+          const lodging = new Set([
+            "hotel",
+            "guest_house",
+            "guesthouse",
+            "hostel",
+            "motel",
+            "resort",
+            "apartment",
+            "alpine_hut",
+            "camp_site",
+            "lodging",
+            "villa",
+            "homestay",
+          ]);
+          const isLodging =
+            lodging.has(tourism) ||
+            lodging.has(amenity) ||
+            /\b(hotel|resort|guest\s*house|hostel|motel|lodg(e|ing)|inn|villa|homestay)\b/i.test(name);
+          if (isLodging) return null;
+          const lat = el.lat ?? el.center?.lat;
+          const lon = el.lon ?? el.center?.lon;
+          const type = el.tags?.tourism || el.tags?.historic || "general";
+          const price =
             el.tags?.tourism === "museum"
-              ? "₹50 – ���200"
+              ? "₹50 – ₹200"
               : el.tags?.tourism === "attraction"
                 ? "₹20 – ₹500"
                 : el.tags?.tourism === "zoo"
                   ? "₹100 – ₹300"
                   : el.tags?.tourism === "theme_park"
                     ? "₹500 – ₹1500"
-                    : el.tags?.tourism === "hotel"
-                      ? "Varies"
-                      : "Free / Nominal",
-        }))
+                    : "Free / Nominal";
+          return {
+            id: el.type + "/" + el.id,
+            name,
+            lat,
+            lon,
+            type,
+            state: STATE_NAME,
+            price,
+          } as TouristPlace;
+        })
         .filter(
           (p: any) =>
+            p &&
             p.name &&
             p.name.length > 0 &&
-            p.type !== "hotel" &&
             Number.isFinite(p.lat) &&
             Number.isFinite(p.lon),
         );
@@ -394,15 +420,34 @@ export default function Explore() {
         elems = json.elements || [];
       }
 
-      const mapped: TouristPlace[] = elems
-        .map((el: any) => ({
-          id: el.type + "/" + el.id,
-          name: (el.tags?.name ?? "").trim(),
-          lat: el.lat ?? el.center?.lat,
-          lon: el.lon ?? el.center?.lon,
-          type: el.tags?.tourism || el.tags?.historic || "general",
-          state: STATE_NAME,
-          price:
+      const mapped: TouristPlace[] = (elems || [])
+        .map((el: any) => {
+          const tourism = String(el.tags?.tourism || "").toLowerCase();
+          const amenity = String(el.tags?.amenity || "").toLowerCase();
+          const name = (el.tags?.name ?? "").trim();
+          const lodging = new Set([
+            "hotel",
+            "guest_house",
+            "guesthouse",
+            "hostel",
+            "motel",
+            "resort",
+            "apartment",
+            "alpine_hut",
+            "camp_site",
+            "lodging",
+            "villa",
+            "homestay",
+          ]);
+          const isLodging =
+            lodging.has(tourism) ||
+            lodging.has(amenity) ||
+            /\b(hotel|resort|guest\s*house|hostel|motel|lodg(e|ing)|inn|villa|homestay)\b/i.test(name);
+          if (isLodging) return null;
+          const lat = el.lat ?? el.center?.lat;
+          const lon = el.lon ?? el.center?.lon;
+          const type = el.tags?.tourism || el.tags?.historic || "general";
+          const price =
             el.tags?.tourism === "museum"
               ? "₹50 – ₹200"
               : el.tags?.tourism === "attraction"
@@ -411,15 +456,22 @@ export default function Explore() {
                   ? "₹100 – ₹300"
                   : el.tags?.tourism === "theme_park"
                     ? "₹500 – ₹1500"
-                    : el.tags?.tourism === "hotel"
-                      ? "Varies"
-                      : "Free / Nominal",
-        }))
+                    : "Free / Nominal";
+          return {
+            id: el.type + "/" + el.id,
+            name,
+            lat,
+            lon,
+            type,
+            state: STATE_NAME,
+            price,
+          } as TouristPlace;
+        })
         .filter(
           (p: any) =>
+            p &&
             p.name &&
             p.name.length > 0 &&
-            p.type !== "hotel" &&
             Number.isFinite(p.lat) &&
             Number.isFinite(p.lon),
         );
@@ -650,7 +702,7 @@ export default function Explore() {
                         Entry Fee: {place.price}
                       </p>
                       <p className="text-xs">
-                        📍 Lat: {place.lat}, Lon: {place.lon}
+                        ���� Lat: {place.lat}, Lon: {place.lon}
                       </p>
                       {userLoc && (
                         <p className="text-xs mt-1">
