@@ -251,6 +251,24 @@ export default function Explore() {
   }
 
   async function fetchOverpass(query: string) {
+    // Prefer server proxy to avoid client CORS/blocks
+    const tryUrls: { url: string; json: any }[] = [] as any;
+    tryUrls.push({ url: "/api/free/overpass", json: { query } });
+    tryUrls.push({ url: "/.netlify/functions/api/free/overpass", json: { query } });
+
+    for (const t of tryUrls) {
+      try {
+        const r = await fetch(t.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(t.json),
+        });
+        if (r.ok) {
+          return await r.json();
+        }
+      } catch {}
+    }
+
     const mirrors = [
       "https://overpass-api.de/api/interpreter",
       "https://overpass.kumi.systems/api/interpreter",
@@ -278,7 +296,6 @@ export default function Explore() {
           const json = JSON.parse(text);
           return json;
         } catch (e) {
-          // Not JSON (often XML/HTML error page). Try next mirror.
           lastErr = e;
           continue;
         }
