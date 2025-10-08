@@ -53,7 +53,7 @@ function AuthButtons() {
 export function SiteHeader() {
   const { pathname } = useLocation();
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-card/90 md:backdrop-blur md:supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-16 items-center gap-4">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 grid place-items-center text-white font-bold">
