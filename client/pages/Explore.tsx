@@ -19,7 +19,9 @@ import React from "react";
 import type { MapMarker } from "@/components/maps/LeafletMap";
 import { useIsMobile } from "@/hooks/use-mobile";
 const LeafletMap = React.lazy(() =>
-  import("@/components/maps/LeafletMap").then((m) => ({ default: m.LeafletMap })),
+  import("@/components/maps/LeafletMap").then((m) => ({
+    default: m.LeafletMap,
+  })),
 );
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -254,7 +256,10 @@ export default function Explore() {
     // Prefer server proxy to avoid client CORS/blocks
     const tryUrls: { url: string; json: any }[] = [] as any;
     tryUrls.push({ url: "/api/free/overpass", json: { query } });
-    tryUrls.push({ url: "/.netlify/functions/api/free/overpass", json: { query } });
+    tryUrls.push({
+      url: "/.netlify/functions/api/free/overpass",
+      json: { query },
+    });
 
     for (const t of tryUrls) {
       try {
@@ -348,7 +353,9 @@ export default function Explore() {
           const isLodging =
             lodging.has(tourism) ||
             lodging.has(amenity) ||
-            /\b(hotel|resort|guest\s*house|hostel|motel|lodg(e|ing)|inn|villa|homestay)\b/i.test(name);
+            /\b(hotel|resort|guest\s*house|hostel|motel|lodg(e|ing)|inn|villa|homestay)\b/i.test(
+              name,
+            );
           if (isLodging) return null;
           const lat = el.lat ?? el.center?.lat;
           const lon = el.lon ?? el.center?.lon;
@@ -491,7 +498,9 @@ export default function Explore() {
           const isLodging =
             lodging.has(tourism) ||
             lodging.has(amenity) ||
-            /\b(hotel|resort|guest\s*house|hostel|motel|lodg(e|ing)|inn|villa|homestay)\b/i.test(name);
+            /\b(hotel|resort|guest\s*house|hostel|motel|lodg(e|ing)|inn|villa|homestay)\b/i.test(
+              name,
+            );
           if (isLodging) return null;
           const lat = el.lat ?? el.center?.lat;
           const lon = el.lon ?? el.center?.lon;
@@ -794,34 +803,41 @@ export default function Explore() {
               </CardHeader>
               <CardContent>
                 <React.Suspense
-                  fallback={<div className="h-[50vh] md:h-[65vh] rounded-md border grid place-items-center text-sm text-muted-foreground">Loading map…</div>}
+                  fallback={
+                    <div className="h-[50vh] md:h-[65vh] rounded-md border grid place-items-center text-sm text-muted-foreground">
+                      Loading map…
+                    </div>
+                  }
                 >
                   <LeafletMap
-                  center={
-                    (userLoc ||
-                      (selectedCity &&
-                      cities.find((c) => c.name === selectedCity)
+                    center={
+                      (userLoc ||
+                        (selectedCity &&
+                        cities.find((c) => c.name === selectedCity)
+                          ? [
+                              cities.find((c) => c.name === selectedCity)!.lat,
+                              cities.find((c) => c.name === selectedCity)!.lon,
+                            ]
+                          : places[0] && [places[0].lat, places[0].lon]) || [
+                          20.5937, 78.9629,
+                        ]) as [number, number]
+                    }
+                    markers={markers}
+                    paths={
+                      routePoints.length > 1
+                        ? [{ points: routePoints, color: "#3b82f6", weight: 5 }]
+                        : undefined
+                    }
+                    path={
+                      !routePoints.length && selectedForRoute && userLoc
                         ? [
-                            cities.find((c) => c.name === selectedCity)!.lat,
-                            cities.find((c) => c.name === selectedCity)!.lon,
+                            userLoc,
+                            [selectedForRoute.lat, selectedForRoute.lon],
                           ]
-                        : places[0] && [places[0].lat, places[0].lon]) || [
-                        20.5937, 78.9629,
-                      ]) as [number, number]
-                  }
-                  markers={markers}
-                  paths={
-                    routePoints.length > 1
-                      ? [{ points: routePoints, color: "#3b82f6", weight: 5 }]
-                      : undefined
-                  }
-                  path={
-                    !routePoints.length && selectedForRoute && userLoc
-                      ? [userLoc, [selectedForRoute.lat, selectedForRoute.lon]]
-                      : undefined
-                  }
-                  className={isMobile ? "h-[50vh]" : "h-[65vh]"}
-                />
+                        : undefined
+                    }
+                    className={isMobile ? "h-[50vh]" : "h-[65vh]"}
+                  />
                 </React.Suspense>
                 {routeLoading && (
                   <p className="text-xs text-muted-foreground mt-2">

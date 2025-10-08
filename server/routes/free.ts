@@ -44,7 +44,7 @@ router.get("/wiki", async (req, res) => {
 
 router.post("/overpass", async (req, res) => {
   try {
-    const query: string = String((req.body?.query ?? req.body?.q ?? "")).trim();
+    const query: string = String(req.body?.query ?? req.body?.q ?? "").trim();
     if (!query) return res.status(400).json({ error: "missing_query" });
 
     const mirrors = [
@@ -87,7 +87,9 @@ router.post("/overpass", async (req, res) => {
       }
     }
 
-    return res.status(502).json({ error: lastErr?.message || "overpass_failed" });
+    return res
+      .status(502)
+      .json({ error: lastErr?.message || "overpass_failed" });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "failed" });
   }
