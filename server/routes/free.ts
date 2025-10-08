@@ -42,4 +42,55 @@ router.get("/wiki", async (req, res) => {
   }
 });
 
+router.post("/overpass", async (req, res) => {
+  try {
+    const query: string = String((req.body?.query ?? req.body?.q ?? "")).trim();
+    if (!query) return res.status(400).json({ error: "missing_query" });
+
+    const mirrors = [
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.kumi.systems/api/interpreter",
+      "https://overpass.zbycz.uk/api/interpreter",
+      "https://overpass.nchc.org.tw/api/interpreter",
+    ];
+
+    let lastErr: any = null;
+    for (const url of mirrors) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 15000);
+        const r = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            Accept: "application/json",
+          },
+          body: new URLSearchParams({ data: query }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        if (!r.ok) {
+          lastErr = new Error(`status_${r.status}`);
+          continue;
+        }
+        const text = await r.text();
+        try {
+          const json = JSON.parse(text);
+          return res.json(json);
+        } catch (e) {
+          lastErr = e;
+          continue;
+        }
+      } catch (e) {
+        lastErr = e;
+        continue;
+      }
+    }
+
+    return res.status(502).json({ error: lastErr?.message || "overpass_failed" });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "failed" });
+  }
+});
+
 export default router;
