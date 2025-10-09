@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { generateOptions, validateParams, type TransportOption } from "../../shared/transport";
+import {
+  generateOptions,
+  validateParams,
+  type TransportOption,
+} from "../../shared/transport";
 
 const router = Router();
 
@@ -38,13 +42,21 @@ router.get("/flights/recommend", async (req, res) => {
     const list: TransportOption[] = (json.data || [])
       .map((it: any) => {
         const airline = it.airline?.name || it.airline?.iata || "Airline";
-        const code = it.flight?.iata || it.flight?.icao || it.flight?.number || "";
-        const dep = it.departure?.scheduled || it.departure?.estimated || it.departure?.actual;
-        const arr = it.arrival?.scheduled || it.arrival?.estimated || it.arrival?.actual;
+        const code =
+          it.flight?.iata || it.flight?.icao || it.flight?.number || "";
+        const dep =
+          it.departure?.scheduled ||
+          it.departure?.estimated ||
+          it.departure?.actual;
+        const arr =
+          it.arrival?.scheduled || it.arrival?.estimated || it.arrival?.actual;
         if (!dep || !arr) return null;
         const d1 = new Date(dep).getTime();
         const d2 = new Date(arr).getTime();
-        const duration = Number.isFinite(d1) && Number.isFinite(d2) ? Math.max(0, Math.round((d2 - d1) / 60000)) : 0;
+        const duration =
+          Number.isFinite(d1) && Number.isFinite(d2)
+            ? Math.max(0, Math.round((d2 - d1) / 60000))
+            : 0;
         const id = `rec-${code}-${dep}`;
         const opt: TransportOption = {
           id,
@@ -86,10 +98,16 @@ router.get("/trains/recommend", async (req, res) => {
     const key = process.env.RAPIDAPI_KEY || "";
     if (!key) return res.status(200).json({ data: [], note: "missing_key" });
     // Try IRCTC trains between stations
-    const fromCode = String((req.query as any).fromCode || "").toUpperCase() || String(p.from).split(" - ")[0].toUpperCase();
-    const toCode = String((req.query as any).toCode || "").toUpperCase() || String(p.to).split(" - ")[0].toUpperCase();
+    const fromCode =
+      String((req.query as any).fromCode || "").toUpperCase() ||
+      String(p.from).split(" - ")[0].toUpperCase();
+    const toCode =
+      String((req.query as any).toCode || "").toUpperCase() ||
+      String(p.to).split(" - ")[0].toUpperCase();
 
-    const url = new URL("https://irctc1.p.rapidapi.com/api/v1/trainsBetweenStations");
+    const url = new URL(
+      "https://irctc1.p.rapidapi.com/api/v1/trainsBetweenStations",
+    );
     url.searchParams.set("fromStationCode", fromCode);
     url.searchParams.set("toStationCode", toCode);
 
@@ -104,13 +122,19 @@ router.get("/trains/recommend", async (req, res) => {
     });
     clearTimeout(t);
     if (!r.ok) return res.status(200).json([]);
-    const json = await r.json().catch(() => ({} as any));
+    const json = await r.json().catch(() => ({}) as any);
     const list: TransportOption[] = (json.data || json.trains || [])
       .map((it: any) => {
-        const code = it.train_number || it.trainNo || it.number || it.train?.number || "";
+        const code =
+          it.train_number || it.trainNo || it.number || it.train?.number || "";
         const name = it.train_name || it.name || it.train?.name || "Train";
-        const dep = it.from_std || it.src_departure_time || it.departure_time || it.from_time;
-        const arr = it.to_std || it.dest_arrival_time || it.arrival_time || it.to_time;
+        const dep =
+          it.from_std ||
+          it.src_departure_time ||
+          it.departure_time ||
+          it.from_time;
+        const arr =
+          it.to_std || it.dest_arrival_time || it.arrival_time || it.to_time;
         if (!dep || !arr) return null;
         // Build ISO from date + HH:MM
         const dateStr = p.date || new Date().toISOString().slice(0, 10);

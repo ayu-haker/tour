@@ -32,21 +32,37 @@ function formatDuration(mins: number) {
 async function fetchTrains(q: { from: string; to: string; date: string }) {
   const params = new URLSearchParams(q as any).toString();
   let r = await fetch(`/api/trains?${params}`);
-  let okJson = r.ok && (r.headers.get("content-type") || "").includes("application/json");
+  let okJson =
+    r.ok && (r.headers.get("content-type") || "").includes("application/json");
   if (!okJson) r = await fetch(`/api/trains/search?${params}`);
   if (!r.ok) throw new Error("failed");
   const txt = await r.text();
-  try { return JSON.parse(txt) as TransportOption[]; } catch { throw new Error("bad-json"); }
+  try {
+    return JSON.parse(txt) as TransportOption[];
+  } catch {
+    throw new Error("bad-json");
+  }
 }
 
-async function fetchRecommendations(q: { from: string; to: string; date: string; fromCode?: string; toCode?: string; }) {
+async function fetchRecommendations(q: {
+  from: string;
+  to: string;
+  date: string;
+  fromCode?: string;
+  toCode?: string;
+}) {
   const params = new URLSearchParams(q as any).toString();
   let r = await fetch(`/api/trains/recommend?${params}`);
   if (!r.ok) r = await fetch(`/api/trains/recommend?${params}`);
-  if (!r.ok) r = await fetch(`/.netlify/functions/api/trains/recommend?${params}`);
+  if (!r.ok)
+    r = await fetch(`/.netlify/functions/api/trains/recommend?${params}`);
   if (!r.ok) return [];
   const txt = await r.text();
-  try { return JSON.parse(txt) as any[]; } catch { return []; }
+  try {
+    return JSON.parse(txt) as any[];
+  } catch {
+    return [];
+  }
 }
 
 export default function Trains() {
@@ -72,13 +88,14 @@ export default function Trains() {
 
   const { data: recs } = useQuery({
     queryKey: ["trains-recommend", query],
-    queryFn: () => fetchRecommendations({
-      from: query!.from,
-      to: query!.to,
-      date: query!.date,
-      fromCode: query!.meta?.fromStation.code,
-      toCode: query!.meta?.toStation.code,
-    }),
+    queryFn: () =>
+      fetchRecommendations({
+        from: query!.from,
+        to: query!.to,
+        date: query!.date,
+        fromCode: query!.meta?.fromStation.code,
+        toCode: query!.meta?.toStation.code,
+      }),
     enabled: !!query,
     refetchInterval: 20000,
   });
@@ -185,16 +202,23 @@ export default function Trains() {
           {(recs || []).length > 0 && (
             <Card className="overflow-hidden border-dashed">
               <CardHeader className="py-3">
-                <CardTitle className="text-base">Recommendations (live)</CardTitle>
+                <CardTitle className="text-base">
+                  Recommendations (live)
+                </CardTitle>
               </CardHeader>
               <CardContent className="py-3 grid gap-3">
                 {(recs || []).map((opt: any) => (
-                  <div key={opt.id} className="flex items-center justify-between">
+                  <div
+                    key={opt.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="font-medium">
-                      {opt.provider} <span className="text-muted-foreground">{opt.code}</span>
+                      {opt.provider}{" "}
+                      <span className="text-muted-foreground">{opt.code}</span>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {formatTime(opt.departTime)} → {formatTime(opt.arriveTime)}
+                      {formatTime(opt.departTime)} →{" "}
+                      {formatTime(opt.arriveTime)}
                     </div>
                   </div>
                 ))}

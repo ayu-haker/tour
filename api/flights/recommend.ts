@@ -53,13 +53,23 @@ export default async function handler(req: Request) {
     const list = (json.data || [])
       .map((it: any) => {
         const airline = pick(it.airline?.name, it.airline?.iata) || "Airline";
-        const code = pick(it.flight?.iata, it.flight?.icao) || it.flight?.number || "";
-        const dep = pick(it.departure?.scheduled, pick(it.departure?.estimated, it.departure?.actual));
-        const arr = pick(it.arrival?.scheduled, pick(it.arrival?.estimated, it.arrival?.actual));
+        const code =
+          pick(it.flight?.iata, it.flight?.icao) || it.flight?.number || "";
+        const dep = pick(
+          it.departure?.scheduled,
+          pick(it.departure?.estimated, it.departure?.actual),
+        );
+        const arr = pick(
+          it.arrival?.scheduled,
+          pick(it.arrival?.estimated, it.arrival?.actual),
+        );
         if (!dep || !arr) return null;
         const d1 = new Date(dep).getTime();
         const d2 = new Date(arr).getTime();
-        const duration = Number.isFinite(d1) && Number.isFinite(d2) ? Math.max(0, Math.round((d2 - d1) / 60000)) : 0;
+        const duration =
+          Number.isFinite(d1) && Number.isFinite(d2)
+            ? Math.max(0, Math.round((d2 - d1) / 60000))
+            : 0;
         return {
           id: `rec-${code}-${dep}`,
           provider: airline,

@@ -32,21 +32,35 @@ async function fetchFlights(q: { from: string; to: string; date: string }) {
   const params = new URLSearchParams(q as any).toString();
   // Try Vercel Edge first, then Express fallback
   let r = await fetch(`/api/flights?${params}`);
-  let okJson = r.ok && (r.headers.get("content-type") || "").includes("application/json");
+  let okJson =
+    r.ok && (r.headers.get("content-type") || "").includes("application/json");
   if (!okJson) r = await fetch(`/api/flights/search?${params}`);
   if (!r.ok) throw new Error("failed");
   const txt = await r.text();
-  try { return JSON.parse(txt) as TransportOption[]; } catch { throw new Error("bad-json"); }
+  try {
+    return JSON.parse(txt) as TransportOption[];
+  } catch {
+    throw new Error("bad-json");
+  }
 }
 
-async function fetchRecommendations(q: { from: string; to: string; date: string }) {
+async function fetchRecommendations(q: {
+  from: string;
+  to: string;
+  date: string;
+}) {
   const params = new URLSearchParams(q as any).toString();
   let r = await fetch(`/api/flights/recommend?${params}`);
   if (!r.ok) r = await fetch(`/api/flights/recommend?${params}`);
-  if (!r.ok) r = await fetch(`/.netlify/functions/api/flights/recommend?${params}`);
+  if (!r.ok)
+    r = await fetch(`/.netlify/functions/api/flights/recommend?${params}`);
   if (!r.ok) return [];
   const txt = await r.text();
-  try { return JSON.parse(txt) as any[]; } catch { return []; }
+  try {
+    return JSON.parse(txt) as any[];
+  } catch {
+    return [];
+  }
 }
 
 export default function Flights() {
@@ -157,16 +171,23 @@ export default function Flights() {
           {(recs || []).length > 0 && (
             <Card className="overflow-hidden border-dashed">
               <CardHeader className="py-3">
-                <CardTitle className="text-base">Recommendations (live)</CardTitle>
+                <CardTitle className="text-base">
+                  Recommendations (live)
+                </CardTitle>
               </CardHeader>
               <CardContent className="py-3 grid gap-3">
                 {(recs || []).map((opt: any) => (
-                  <div key={opt.id} className="flex items-center justify-between">
+                  <div
+                    key={opt.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="font-medium">
-                      {opt.provider} <span className="text-muted-foreground">{opt.code}</span>
+                      {opt.provider}{" "}
+                      <span className="text-muted-foreground">{opt.code}</span>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {formatTime(opt.departTime)} → {formatTime(opt.arriveTime)}
+                      {formatTime(opt.departTime)} →{" "}
+                      {formatTime(opt.arriveTime)}
                     </div>
                   </div>
                 ))}
