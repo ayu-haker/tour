@@ -39,6 +39,16 @@ async function fetchTrains(q: { from: string; to: string; date: string }) {
   try { return JSON.parse(txt) as TransportOption[]; } catch { throw new Error("bad-json"); }
 }
 
+async function fetchRecommendations(q: { from: string; to: string; date: string; fromCode?: string; toCode?: string; }) {
+  const params = new URLSearchParams(q as any).toString();
+  let r = await fetch(`/api/trains/recommend?${params}`);
+  if (!r.ok) r = await fetch(`/api/trains/recommend?${params}`);
+  if (!r.ok) r = await fetch(`/.netlify/functions/api/trains/recommend?${params}`);
+  if (!r.ok) return [];
+  const txt = await r.text();
+  try { return JSON.parse(txt) as any[]; } catch { return []; }
+}
+
 export default function Trains() {
   const { toast } = useToast();
   const [cls, setCls] = useState("sleeper");
@@ -58,6 +68,19 @@ export default function Trains() {
       fetchTrains({ from: query!.from, to: query!.to, date: query!.date }),
     enabled: !!query,
     refetchInterval: 5000,
+  });
+
+  const { data: recs } = useQuery({
+    queryKey: ["trains-recommend", query],
+    queryFn: () => fetchRecommendations({
+      from: query!.from,
+      to: query!.to,
+      date: query!.date,
+      fromCode: query!.meta?.fromStation.code,
+      toCode: query!.meta?.toStation.code,
+    }),
+    enabled: !!query,
+    refetchInterval: 20000,
   });
 
   async function recordRequest(type: string, payload: any) {
