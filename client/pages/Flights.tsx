@@ -39,6 +39,16 @@ async function fetchFlights(q: { from: string; to: string; date: string }) {
   try { return JSON.parse(txt) as TransportOption[]; } catch { throw new Error("bad-json"); }
 }
 
+async function fetchRecommendations(q: { from: string; to: string; date: string }) {
+  const params = new URLSearchParams(q as any).toString();
+  let r = await fetch(`/api/flights/recommend?${params}`);
+  if (!r.ok) r = await fetch(`/api/flights/recommend?${params}`);
+  if (!r.ok) r = await fetch(`/.netlify/functions/api/flights/recommend?${params}`);
+  if (!r.ok) return [];
+  const txt = await r.text();
+  try { return JSON.parse(txt) as any[]; } catch { return []; }
+}
+
 export default function Flights() {
   const { toast } = useToast();
   const [cls, setCls] = useState("economy");
