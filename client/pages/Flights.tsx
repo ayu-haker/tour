@@ -66,6 +66,13 @@ export default function Flights() {
     refetchInterval: live ? 3000 : false,
   });
 
+  const { data: recs } = useQuery({
+    queryKey: ["flights-recommend", query],
+    queryFn: () => fetchRecommendations(query as any),
+    enabled: !!query,
+    refetchInterval: 15000,
+  });
+
   function airlineUrl(provider: string) {
     const p = provider.toLowerCase();
     if (p.includes("indigo")) return "https://www.goindigo.in/";
