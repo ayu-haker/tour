@@ -154,6 +154,26 @@ export default function Flights() {
               {query.from} → {query.to} on {new Date(query.date).toDateString()}
             </div>
           )}
+          {(recs || []).length > 0 && (
+            <Card className="overflow-hidden border-dashed">
+              <CardHeader className="py-3">
+                <CardTitle className="text-base">Recommendations (live)</CardTitle>
+              </CardHeader>
+              <CardContent className="py-3 grid gap-3">
+                {(recs || []).map((opt: any) => (
+                  <div key={opt.id} className="flex items-center justify-between">
+                    <div className="font-medium">
+                      {opt.provider} <span className="text-muted-foreground">{opt.code}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {formatTime(opt.departTime)} → {formatTime(opt.arriveTime)}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           {(data || []).map((opt) => (
             <Card key={opt.id} className="overflow-hidden">
               <CardHeader className="py-3">
