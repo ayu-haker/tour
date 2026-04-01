@@ -1,0 +1,400 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SiteLayout } from "@/components/layout/SiteLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LeafletMap, MapMarker } from "@/components/maps/LeafletMap";
+import { loadJSON, saveJSON } from "@/lib/storage";
+
+const INDIA_CENTER: [number, number] = [20.5937, 78.9629];
+
+type Category = "Bike" | "Auto" | "Mini" | "Sedan" | "SUV";
+const PRICING: Record<Category, { base: number; perKm: number }> = {
+  Bike: { base: 20, perKm: 6 },
+  Auto: { base: 25, perKm: 10 },
+  Mini: { base: 40, perKm: 12 },
+  Sedan: { base: 50, perKm: 15 },
+  SUV: { base: 70, perKm: 18 },
+};
+
+function haversine(a: [number, number], b: [number, number]) {
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const R = 6371; // km
+  const dLat = toRad(b[0] - a[0]);
+  const dLon = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]);
+  const lat2 = toRad(b[0]);
+  const s =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+async function geocodePlace(query: string): Promise<[number, number] | null> {
+  const q = query.trim();
+  if (!q) return null;
+  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) return null;
+  const item = data[0];
+  const lat = parseFloat(item.lat);
+  const lon = parseFloat(item.lon);
+  if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+  return null;
+}
+
+export default function Cabs() {
+  const [pickup, setPickup] = useState<[number, number] | null>(null);
+  const [drop, setDrop] = useState<[number, number] | null>(null);
+  const [active, setActive] = useState<"pickup" | "drop">("pickup");
+  const [category, setCategory] = useState<Category>("Auto");
+  const [highDemand, setHighDemand] = useState(false);
+  const [pickupText, setPickupText] = useState("");
+  const [dropText, setDropText] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "searching" | "driver" | "ongoing"
+  >("idle");
+  const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
+  const simRef = useRef<number | null>(null);
+
+  const [routePoints, setRoutePoints] = useState<[number, number][]>([]);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
+
+  const distanceKm = useMemo(
+    () => (pickup && drop ? haversine(pickup, drop) : 0),
+    [pickup, drop],
+  );
+  const etaMin = useMemo(
+    () => (distanceKm ? Math.max(6, Math.round((distanceKm / 25) * 60)) : 0),
+    [distanceKm],
+  );
+  const estimate = useMemo(() => {
+    const { base, perKm } = PRICING[category];
+    const surge = highDemand ? 1.5 : 1;
+    const subtotal = base + perKm * distanceKm;
+    const taxed = subtotal * 1.05; // GST 5%
+    return Math.round(taxed * surge);
+  }, [category, highDemand, distanceKm]);
+
+  const markers: MapMarker[] = useMemo(() => {
+    const list: MapMarker[] = [];
+    if (pickup)
+      list.push({
+        id: "pickup",
+        position: pickup,
+        title: `Pickup${pickupText ? ": " + pickupText : ""}`,
+      });
+    if (drop)
+      list.push({
+        id: "drop",
+        position: drop,
+        title: `Drop${dropText ? ": " + dropText : ""}`,
+      });
+    if (driverPos)
+      list.push({ id: "driver", position: driverPos, title: "Driver" });
+    return list;
+  }, [pickup, drop, pickupText, dropText, driverPos]);
+
+  const path = pickup && drop ? [pickup, drop] : undefined;
+
+  async function computeRoute(a: [number, number], b: [number, number]) {
+    setRouteError(null);
+    setRouteLoading(true);
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Routing failed");
+      const json = await res.json();
+      const coords: [number, number][] =
+        json.routes?.[0]?.geometry?.coordinates?.map((c: [number, number]) => [
+          c[1],
+          c[0],
+        ]) ?? [];
+      if (coords.length > 1) setRoutePoints(coords);
+      else setRoutePoints([a, b]);
+    } catch (e) {
+      setRoutePoints(a && b ? [a, b] : []);
+      setRouteError("Could not fetch driving route. Showing straight line.");
+    } finally {
+      setRouteLoading(false);
+    }
+  }
+
+  function onMapClick(lat: number, lng: number) {
+    if (active === "pickup") setPickup([lat, lng]);
+    else setDrop([lat, lng]);
+  }
+
+  const [locLoading, setLocLoading] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
+
+  function useLocation() {
+    setLocError(null);
+    if (!("geolocation" in navigator)) {
+      setLocError("Geolocation is not supported on this device.");
+      return;
+    }
+    const isSecure =
+      typeof window !== "undefined" ? window.isSecureContext : true;
+    if (!isSecure) {
+      setLocError("Location requires HTTPS. Open the site over https://");
+      return;
+    }
+    setLocLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const p: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        setPickup(p);
+        if (!pickupText) setPickupText("Current location");
+        setActive("drop");
+        setLocLoading(false);
+      },
+      async (err) => {
+        if (err.code === err.PERMISSION_DENIED)
+          setLocError(
+            "Permission denied. Enable location access in your browser settings.",
+          );
+        else if (err.code === err.POSITION_UNAVAILABLE)
+          setLocError("Location unavailable. Try again or check GPS.");
+        else if (err.code === err.TIMEOUT)
+          setLocError("Timed out while getting location. Try again.");
+        else setLocError("Unable to get your location.");
+        // Fallback to approximate IP location
+        try {
+          const ipr = await fetch("https://ipapi.co/json/");
+          const ipd = await ipr.json().catch(() => ({}) as any);
+          const lat = Number(ipd.latitude);
+          const lon = Number(ipd.longitude);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            const p: [number, number] = [lat, lon];
+            setPickup(p);
+            if (!pickupText) setPickupText("Approx. location");
+            setActive("drop");
+            setLocError(
+              "Using approximate location based on IP (may be inaccurate).",
+            );
+          }
+        } catch {}
+        setLocLoading(false);
+      },
+      { enableHighAccuracy: true, maximumAge: 60_000, timeout: 10_000 },
+    );
+  }
+
+  async function setPickupFromText() {
+    const pos = await geocodePlace(pickupText);
+    if (pos) setPickup(pos);
+  }
+  async function setDropFromText() {
+    const pos = await geocodePlace(dropText);
+    if (pos) setDrop(pos);
+  }
+
+  useEffect(() => {
+    if (pickup && drop) computeRoute(pickup, drop);
+    else setRoutePoints([]);
+  }, [pickup, drop]);
+
+  async function requestRide() {
+    if (!pickup || !drop) return;
+    setStatus("searching");
+    try {
+      const r = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "cab",
+          payload: { pickup, drop, category, estimate, highDemand },
+        }),
+      });
+      const data = await r.json();
+      const MY_REQ_KEY = "tour.myRequests";
+      const list = loadJSON<string[]>(MY_REQ_KEY, []);
+      if (data?.id && !list.includes(String(data.id))) {
+        list.unshift(String(data.id));
+        saveJSON(MY_REQ_KEY, list.slice(0, 100));
+      }
+    } catch {}
+    setTimeout(() => {
+      setStatus("driver");
+      setDriverPos(pickup);
+      const steps = 100;
+      let i = 0;
+      const start = pickup;
+      const end = drop;
+      simRef.current = window.setInterval(() => {
+        i += 1;
+        const t = Math.min(1, i / steps);
+        const lat = start[0] + (end[0] - start[0]) * t;
+        const lng = start[1] + (end[1] - start[1]) * t;
+        setDriverPos([lat, lng]);
+        if (t >= 1) {
+          window.clearInterval(simRef.current!);
+          setStatus("ongoing");
+        }
+      }, 300);
+    }, 1200);
+  }
+
+  useEffect(
+    () => () => {
+      if (simRef.current) window.clearInterval(simRef.current);
+    },
+    [],
+  );
+
+  return (
+    <SiteLayout>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Cab Booking</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3">
+              <div>
+                <Label>Pickup</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Set on map or type"
+                    value={pickupText}
+                    onChange={(e) => setPickupText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") setPickupFromText();
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setActive("pickup");
+                    }}
+                  >
+                    Set on map
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={useLocation}
+                    disabled={locLoading}
+                  >
+                    {locLoading ? "Locating…" : "Use my location"}
+                  </Button>
+                  <Button type="button" onClick={setPickupFromText}>
+                    Set
+                  </Button>
+                </div>
+                {locError && (
+                  <p className="mt-1 text-xs text-red-600">{locError}</p>
+                )}
+              </div>
+              <div>
+                <Label>Drop</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Set on map or type"
+                    value={dropText}
+                    onChange={(e) => setDropText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") setDropFromText();
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setActive("drop");
+                    }}
+                  >
+                    Set on map
+                  </Button>
+                  <Button type="button" onClick={setDropFromText}>
+                    Set
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(PRICING) as Category[]).map((c) => (
+                <Button
+                  key={c}
+                  variant={category === c ? "default" : "outline"}
+                  onClick={() => setCategory(c)}
+                >
+                  {c}
+                </Button>
+              ))}
+              <Button
+                variant={highDemand ? "destructive" : "outline"}
+                onClick={() => setHighDemand((v) => !v)}
+              >
+                {highDemand ? "High demand (ON)" : "High demand"}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 text-sm">
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Distance</div>
+                <div className="font-semibold">
+                  {distanceKm ? distanceKm.toFixed(2) : "-"} km
+                </div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">ETA</div>
+                <div className="font-semibold">
+                  {etaMin ? `${etaMin} min` : "-"}
+                </div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Est. Fare</div>
+                <div className="font-semibold">₹{estimate}</div>
+              </div>
+            </div>
+
+            {routeLoading && (
+              <p className="text-xs text-muted-foreground">
+                Calculating route…
+              </p>
+            )}
+            {routeError && (
+              <p className="text-xs text-amber-600">{routeError}</p>
+            )}
+
+            <div className="flex justify-end">
+              <Button
+                size="lg"
+                onClick={requestRide}
+                disabled={!pickup || !drop || status === "searching"}
+              >
+                {status === "searching"
+                  ? "Searching..."
+                  : status === "driver"
+                    ? "Driver on the way"
+                    : "Request Ride"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div>
+          <LeafletMap
+            center={(pickup || drop || INDIA_CENTER) as [number, number]}
+            markers={markers}
+            onMapClick={onMapClick}
+            paths={
+              routePoints.length > 1
+                ? [{ points: routePoints, color: "#3b82f6", weight: 5 }]
+                : undefined
+            }
+            path={!routePoints.length && path ? path : undefined}
+          />
+        </div>
+      </div>
+    </SiteLayout>
+  );
+}
