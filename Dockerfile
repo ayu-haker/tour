@@ -35,11 +35,19 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
-# Expose the port (adjust if your app uses a different port)
+# Expose the application port
 EXPOSE 8080
 
-# Health check (optional but recommended)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+# Environment variables (can be overridden at runtime)
+ENV NODE_ENV=production
+ENV DB_HOST=mysql
+ENV DB_PORT=3306
+ENV DB_USER=root
+ENV DB_PASSWORD=tourapp123
+ENV DB_NAME=tour_app
+
+# Health check for the application
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 # Start the application

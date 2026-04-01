@@ -119,6 +119,146 @@ docker logs --tail 100 tour-container  # Last 100 lines
 docker exec -it tour-container /bin/sh
 ```
 
+## MySQL Database Setup
+
+### Database Configuration
+
+The application now includes **MySQL 8.4** database support with the following features:
+
+**Environment Variables for MySQL Connection:**
+
+```bash
+DB_HOST=localhost          # MySQL hostname
+DB_PORT=3306              # MySQL port
+DB_USER=root              # Database user
+DB_PASSWORD=tourapp123    # Database password
+DB_NAME=tour_app          # Database name
+```
+
+### Quick Start with Docker Compose (Recommended)
+
+The easiest way to run the app with MySQL is using Docker Compose:
+
+```bash
+# Start both app and MySQL
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f app
+docker-compose logs -f mysql
+
+# Stop services
+docker-compose down
+
+# Stop and remove all data
+docker-compose down -v
+```
+
+**What gets created:**
+- MySQL database at `localhost:3306`
+- Tour app at `http://localhost:8080`
+- Persistent volume for database data
+
+### Manual MySQL Setup (If Not Using Docker Compose)
+
+If you prefer to run MySQL separately:
+
+#### Option 1: MySQL Docker Container Only
+
+```bash
+docker run -d \
+  --name tour-mysql \
+  -e MYSQL_ROOT_PASSWORD=tourapp123 \
+  -e MYSQL_DATABASE=tour_app \
+  -p 3306:3306 \
+  -v mysql_data:/var/lib/mysql \
+  mysql:8.4-alpine
+```
+
+#### Option 2: Local MySQL Installation
+
+If you have MySQL installed locally:
+
+```bash
+# Create database
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS tour_app;"
+
+# (Optional) Create user
+mysql -u root -p -e "CREATE USER 'tour_user'@'localhost' IDENTIFIED BY 'tour_pass123';"
+mysql -u root -p -e "GRANT ALL PRIVILEGES ON tour_app.* TO 'tour_user'@'localhost';"
+```
+
+### Initialize Database Tables
+
+After setting up MySQL, initialize the database schema:
+
+```bash
+# Using Node.js directly
+npx tsx server/init-db.ts
+
+# Or if npm script is available
+npm run db:init
+```
+
+This creates the following tables:
+- **users** - User profiles and authentication
+- **bookings** - Flight, train, hotel, cab, food bookings
+- **transactions** - Payment transactions
+- **api_logs** - API call logging and monitoring
+
+### Verify MySQL Connection
+
+Check if MySQL is running and accessible:
+
+```bash
+# Using docker-compose
+docker-compose ps
+
+# Direct MySQL connection test
+mysql -h 127.0.0.1 -u root -ptourapp123 -e "SELECT 1;"
+
+# From within Docker
+docker exec tour-mysql mysql -u root -ptourapp123 -e "SHOW DATABASES;"
+```
+
+### Database Backup and Restore
+
+**Backup MySQL data:**
+
+```bash
+docker exec tour-mysql mysqldump -u root -ptourapp123 tour_app > backup.sql
+
+# Or with docker-compose
+docker-compose exec mysql mysqldump -u root -ptourapp123 tour_app > backup.sql
+```
+
+**Restore MySQL data:**
+
+```bash
+# From file
+docker exec -i tour-mysql mysql -u root -ptourapp123 tour_app < backup.sql
+
+# Or with docker-compose
+docker-compose exec -T mysql mysql -u root -ptourapp123 tour_app < backup.sql
+```
+
+### Access MySQL Command Line
+
+Connect to MySQL directly from the container:
+
+```bash
+# Using docker-compose
+docker-compose exec mysql mysql -u root -ptourapp123
+
+# Or standalone container
+docker exec -it tour-mysql mysql -u root -ptourapp123
+
+# Once inside MySQL CLI
+USE tour_app;
+SHOW TABLES;
+SELECT * FROM users;
+```
+
 ## Multi-Stage Build Benefits
 
 The Dockerfile uses a **multi-stage build** to optimize image size:
@@ -325,6 +465,60 @@ docker run -p 3000:8080 tour-app:latest
 
 Access the app at `http://localhost:3000`
 
+### MySQL Connection Errors
+
+**Error: "Cannot connect to MySQL server"**
+
+Check MySQL container is running:
+
+```bash
+docker ps | grep mysql
+```
+
+If not running, start it:
+
+```bash
+docker-compose up -d mysql
+```
+
+Verify connection:
+
+```bash
+docker exec tour-mysql mysql -u root -ptourapp123 -e "SELECT 1;"
+```
+
+**Error: "Database does not exist"**
+
+Initialize database:
+
+```bash
+npx tsx server/init-db.ts
+```
+
+Or manually create:
+
+```bash
+docker exec tour-mysql mysql -u root -ptourapp123 -e "CREATE DATABASE tour_app;"
+```
+
+**Error: "Access denied for user"**
+
+Verify environment variables in docker-compose.yml or Dockerfile match:
+
+```yaml
+DB_USER: root
+DB_PASSWORD: tourapp123
+DB_NAME: tour_app
+```
+
+Reset MySQL container:
+
+```bash
+docker-compose down -v
+docker-compose up -d mysql
+npx tsx server/init-db.ts
+```
+
 ### High Memory Usage
 
 Monitor container resource usage:
@@ -337,6 +531,12 @@ Limit memory:
 
 ```bash
 docker run -p 8080:8080 -m 1g --memory-swap 1g tour-app:latest
+```
+
+For MySQL:
+
+```bash
+docker-compose exec mysql mysql -u root -ptourapp123 -e "SHOW STATUS LIKE 'Threads%';"
 ```
 
 ## Security Best Practices
