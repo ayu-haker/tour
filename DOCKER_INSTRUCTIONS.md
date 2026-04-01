@@ -13,8 +13,8 @@ This document provides step-by-step instructions for building and deploying the 
 ### 1. Clone or Pull the Repository
 
 ```bash
-git clone <repository-url>
-cd tour-main
+git clone https://github.com/ayu-haker/tour
+cd tour
 ```
 
 ### 2. Create .env File
@@ -186,10 +186,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ### Build Fails
 
 ```bash
-# Clean build cache
 docker builder prune
-
-# Rebuild without cache
 docker compose build --no-cache
 ```
 
@@ -201,26 +198,23 @@ docker compose logs app
 
 ### MySQL Connection Issues
 
-The app has automatic retry logic (10 attempts, 5s delay). If issues persist:
+The app has automatic retry logic (10 attempts, 5s delay).
 
 ```bash
-# Check MySQL is running
 docker compose ps mysql
-
-# Check MySQL logs
 docker compose logs mysql
-
-# Test MySQL connection
 docker compose exec mysql mysql -u root -proot123 -e "SELECT 1;"
 ```
 
 ### Port Already in Use
 
 ```bash
-# Find what's using port 8080
 netstat -ano | findstr :8080
+```
 
-# Or change port in docker-compose.yml
+Or change port in docker-compose.yml:
+
+```yaml
 ports:
   - "3000:8080"
 ```
@@ -253,13 +247,8 @@ RAPIDAPI_KEY=
 ## Image Tags and Versioning
 
 ```bash
-# Tag for latest
 docker build -t tour-app:latest .
-
-# Tag for specific version
 docker build -t tour-app:v1.0.0 .
-
-# Tag for registry
 docker build -t myregistry.azurecr.io/tour-app:latest .
 ```
 
@@ -284,13 +273,8 @@ docker push myregistry.azurecr.io/tour-app:latest
 ## Cleanup
 
 ```bash
-# Remove stopped containers
 docker container prune
-
-# Remove unused images
 docker image prune
-
-# Full cleanup
 docker system prune -a
 ```
 

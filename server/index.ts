@@ -12,15 +12,12 @@ import authRouter from "./routes/auth";
 export async function createServer() {
   const app = express();
 
-  // Initialize database connection
   try {
     await initializeDatabase();
   } catch (error) {
     console.error("Failed to initialize database:", error);
-    // Continue anyway - server can work without DB for some features
   }
 
-  // Middleware
   app.use(
     cors({
       origin: "*",
@@ -29,7 +26,6 @@ export async function createServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Health check
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
@@ -39,10 +35,7 @@ export async function createServer() {
     res.status(200).json({ status: "ok" });
   });
 
-  // Authentication routes
   app.use("/api/auth", authRouter);
-
-  // Other API routes
   app.get("/api/demo", handleDemo);
   app.use("/api/requests", requestsRouter);
   app.use("/api", transportRouter);

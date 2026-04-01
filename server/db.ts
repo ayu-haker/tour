@@ -51,12 +51,10 @@ export async function closeDatabase() {
   }
 }
 
-// Initialize database tables
 export async function createTables() {
   const pool = getPool();
 
   const tables = [
-    // Users table with authentication
     `CREATE TABLE IF NOT EXISTS users (
       id INT PRIMARY KEY AUTO_INCREMENT,
       username VARCHAR(100) UNIQUE NOT NULL,
@@ -73,8 +71,6 @@ export async function createTables() {
       INDEX idx_email (email),
       INDEX idx_role (role)
     )`,
-
-    // Sessions table
     `CREATE TABLE IF NOT EXISTS sessions (
       id INT PRIMARY KEY AUTO_INCREMENT,
       user_id INT NOT NULL,
@@ -85,8 +81,6 @@ export async function createTables() {
       INDEX idx_user_id (user_id),
       INDEX idx_expires_at (expires_at)
     )`,
-
-    // Bookings table
     `CREATE TABLE IF NOT EXISTS bookings (
       id INT PRIMARY KEY AUTO_INCREMENT,
       user_id INT NOT NULL,
@@ -104,8 +98,6 @@ export async function createTables() {
       INDEX idx_status (status),
       INDEX idx_created_at (created_at)
     )`,
-
-    // Transactions table
     `CREATE TABLE IF NOT EXISTS transactions (
       id INT PRIMARY KEY AUTO_INCREMENT,
       user_id INT NOT NULL,
@@ -122,8 +114,6 @@ export async function createTables() {
       INDEX idx_status (status),
       INDEX idx_transaction_id (transaction_id)
     )`,
-
-    // API Logs table
     `CREATE TABLE IF NOT EXISTS api_logs (
       id INT PRIMARY KEY AUTO_INCREMENT,
       endpoint VARCHAR(255),

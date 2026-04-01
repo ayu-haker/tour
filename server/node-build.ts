@@ -33,7 +33,6 @@ startServer().catch((error) => {
   process.exit(1);
 });
 
-// Graceful shutdown
 process.on("SIGTERM", () => {
   console.log("🛑 Received SIGTERM, shutting down gracefully");
   process.exit(0);
