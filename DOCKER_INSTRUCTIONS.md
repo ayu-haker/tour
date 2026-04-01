@@ -51,6 +51,36 @@ You should see output similar to:
 tour-app     latest     abc123def456    5 minutes ago    450MB
 ```
 
+### 4. Initialize Database & Admin User (First Time Only)
+
+After starting the containers, initialize the database with all required tables and seed the default admin user:
+
+```bash
+# Using Docker Compose
+docker-compose exec app npx tsx server/init-db.ts
+
+# Or standalone container
+docker exec tour-app npx tsx server/init-db.ts
+```
+
+This creates:
+- Database tables (users, bookings, sessions, transactions, api_logs)
+- Default admin user with credentials:
+  - **Username:** `admin`
+  - **Password:** `admin@1234`
+  - **Role:** Admin
+
+After initialization, you should see:
+```
+✓ MySQL Database connected successfully
+✓ Table 'users' created/verified
+✓ Table 'sessions' created/verified
+✓ Table 'bookings' created/verified
+✓ Table 'transactions' created/verified
+✓ Table 'api_logs' created/verified
+✓ Admin user created
+```
+
 ## Running the Container
 
 ### Basic Execution
@@ -59,7 +89,10 @@ tour-app     latest     abc123def456    5 minutes ago    450MB
 docker run -p 8080:8080 tour-app:latest
 ```
 
-The application will be available at `http://localhost:8080`
+The application will be available at:
+- **Frontend:** `http://localhost:8080`
+- **API:** `http://localhost:8080/api`
+- **Auth API:** `http://localhost:8080/api/auth/login`
 
 ### With Environment Variables
 
@@ -140,24 +173,48 @@ DB_NAME=tour_app          # Database name
 The easiest way to run the app with MySQL is using Docker Compose:
 
 ```bash
-# Start both app and MySQL
+# 1. Start both app and MySQL
 docker-compose up -d
 
-# Check logs
-docker-compose logs -f app
+# 2. Wait for MySQL to be ready (check logs)
 docker-compose logs -f mysql
+# Watch for: "ready for connections"
+
+# 3. Initialize database and create admin user (one-time)
+docker-compose exec app npx tsx server/init-db.ts
+
+# 4. Check application logs
+docker-compose logs -f app
+
+# 5. Access the application
+# Frontend: http://localhost:8080
+# Login with: admin / admin@1234
+```
+
+**Management Commands:**
+```bash
+# View logs
+docker-compose logs -f app      # App logs
+docker-compose logs -f mysql    # MySQL logs
 
 # Stop services
 docker-compose down
 
-# Stop and remove all data
+# Stop and remove all data (fresh start)
 docker-compose down -v
+
+# Restart services
+docker-compose restart
+
+# Check running containers
+docker-compose ps
 ```
 
 **What gets created:**
-- MySQL database at `localhost:3306`
+- MySQL database at `localhost:3306` (user: root / pass: tourapp123)
 - Tour app at `http://localhost:8080`
-- Persistent volume for database data
+- Admin user: `admin` / `admin@1234`
+- Persistent volume for database data (`mysql_data`)
 
 ### Manual MySQL Setup (If Not Using Docker Compose)
 
@@ -257,6 +314,162 @@ docker exec -it tour-mysql mysql -u root -ptourapp123
 USE tour_app;
 SHOW TABLES;
 SELECT * FROM users;
+```
+
+## Authentication System
+
+### Default Admin User Credentials
+
+When database is initialized, the following admin account is automatically created:
+
+```
+Username: admin
+Password: admin@1234
+Email: admin@tour.local
+Role: Admin
+```
+
+### Authentication API Endpoints
+
+After starting the Docker containers, you can test the authentication system:
+
+#### Login Endpoint
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin@1234"
+  }'
+```
+
+Response:
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "role": "admin"
+  }
+}
+```
+
+#### Get Current User
+```bash
+curl -X GET http://localhost:8080/api/auth/me \
+  -H "Authorization: Bearer <your-token>"
+```
+
+#### Register New User
+```bash
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "email": "john@example.com",
+    "password": "securepass123",
+    "name": "John Doe"
+  }'
+```
+
+#### Verify Token
+```bash
+curl -X GET http://localhost:8080/api/auth/verify \
+  -H "Authorization: Bearer <your-token>"
+```
+
+### Change Admin Password (Production)
+
+To change the admin password, connect to MySQL and update directly:
+
+```bash
+# Using docker-compose
+docker-compose exec mysql mysql -u root -ptourapp123 tour_app
+
+# Then run SQL to change password (use proper bcrypt hashing in production):
+# UPDATE users SET password_hash = '<new-bcrypt-hash>' WHERE username = 'admin';
+```
+
+Or use Node.js script:
+```bash
+docker-compose exec app node -e "
+const bcrypt = require('bcrypt');
+const password = 'newpassword@1234';
+bcrypt.hash(password, 10).then(hash => console.log(hash));
+"
+```
+
+### Security Environment Variables
+
+Set these in `docker-compose.yml` or via Docker environment:
+
+```yaml
+environment:
+  JWT_SECRET: your-super-secure-secret-key-change-in-prod
+  JWT_EXPIRY: 7d
+```
+
+For Docker run:
+```bash
+docker run -p 8080:8080 \
+  -e JWT_SECRET=your-secure-key \
+  tour-app:latest
+```
+
+### Database Tables for Authentication
+
+Three main authentication tables are created:
+
+**users table:**
+```sql
+- id (Primary Key)
+- username (Unique)
+- email (Unique)
+- password_hash (bcrypt)
+- name
+- phone
+- role (user, admin, moderator)
+- is_active (boolean)
+- last_login (timestamp)
+- created_at
+- updated_at
+```
+
+**sessions table:**
+```sql
+- id (Primary Key)
+- user_id (Foreign Key)
+- token (JWT token)
+- expires_at
+- created_at
+```
+
+### Manage Users via Docker
+
+**View all users:**
+```bash
+docker-compose exec mysql mysql -u root -ptourapp123 tour_app \
+  -e "SELECT id, username, email, role, is_active FROM users;"
+```
+
+**Disable user account:**
+```bash
+docker-compose exec mysql mysql -u root -ptourapp123 tour_app \
+  -e "UPDATE users SET is_active = FALSE WHERE username = 'john_doe';"
+```
+
+**Promote user to admin:**
+```bash
+docker-compose exec mysql mysql -u root -ptourapp123 tour_app \
+  -e "UPDATE users SET role = 'admin' WHERE username = 'john_doe';"
+```
+
+**Delete user:**
+```bash
+docker-compose exec mysql mysql -u root -ptourapp123 tour_app \
+  -e "DELETE FROM users WHERE username = 'john_doe';"
 ```
 
 ## Multi-Stage Build Benefits
@@ -432,6 +645,56 @@ docker-compose down
 
 ## Troubleshooting
 
+### Authentication Issues
+
+**"Admin user not found" or login fails:**
+
+```bash
+# Check if admin user exists
+docker-compose exec mysql mysql -u root -ptourapp123 tour_app \
+  -e "SELECT username, role FROM users WHERE username = 'admin';"
+
+# If empty, reinitialize:
+docker-compose exec app npx tsx server/init-db.ts
+
+# Verify tables exist
+docker-compose exec mysql mysql -u root -ptourapp123 tour_app \
+  -e "SHOW TABLES;"
+```
+
+**"Database initialization script failed":**
+
+```bash
+# Ensure MySQL is healthy
+docker-compose logs mysql
+
+# Check MySQL container is running
+docker-compose ps mysql
+
+# If not running, start it:
+docker-compose up -d mysql
+
+# Wait a few seconds for MySQL to start
+sleep 10
+
+# Then run init script
+docker-compose exec app npx tsx server/init-db.ts
+```
+
+**"Invalid token" on authentication:**
+
+- Token has expired (default: 7 days)
+- JWT_SECRET changed after token creation
+- Token corrupted during transmission
+
+Solution:
+```bash
+# Login again to get new token
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin@1234"}'
+```
+
 ### Build Fails with "pnpm-lock.yaml" Not Found
 
 Ensure you have the `pnpm-lock.yaml` file in your repository. If it's missing:
@@ -600,6 +863,61 @@ docker container prune
 
 ```bash
 docker system prune -a
+```
+
+## Environment Variables Reference
+
+### Database Configuration
+
+```bash
+DB_HOST=mysql                    # MySQL hostname
+DB_PORT=3306                     # MySQL port
+DB_USER=root                     # MySQL user
+DB_PASSWORD=tourapp123           # MySQL password
+DB_NAME=tour_app                 # Database name
+```
+
+### Authentication Configuration
+
+```bash
+JWT_SECRET=your-secret-key       # JWT signing secret (CHANGE IN PRODUCTION!)
+JWT_EXPIRY=7d                    # Token expiration time
+```
+
+### External APIs
+
+```bash
+SUPABASE_URL=https://...         # Supabase URL (for requests)
+SUPABASE_ANON_KEY=...            # Supabase anon key
+OPENAI_API_KEY=sk-...            # OpenAI API key (for AI assistant)
+AVIATIONSTACK_KEY=...            # Aviation API key
+RAPIDAPI_KEY=...                 # RapidAPI key (for trains)
+```
+
+### Example .env File
+
+```bash
+# Server
+NODE_ENV=production
+PORT=8080
+
+# Database
+DB_HOST=mysql
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=tourapp123
+DB_NAME=tour_app
+
+# Authentication
+JWT_SECRET=your-very-secure-secret-key-change-this
+JWT_EXPIRY=7d
+
+# External Services
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+OPENAI_API_KEY=sk-your-key
+AVIATIONSTACK_KEY=your-key
+RAPIDAPI_KEY=your-key
 ```
 
 ## Additional Resources
