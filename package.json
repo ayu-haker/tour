@@ -22,8 +22,10 @@
   },
   "dependencies": {
     "@splinetool/react-spline": "^4.1.0",
+    "bcrypt": "^5.1.1",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.1.2",
     "leaflet": "^1.9.4",
     "mysql2": "^3.9.8",
     "react-leaflet": "^4.2.1",

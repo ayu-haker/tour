@@ -53,15 +53,34 @@ export async function createTables() {
   const pool = getPool();
 
   const tables = [
-    // Users table
+    // Users table with authentication
     `CREATE TABLE IF NOT EXISTS users (
       id INT PRIMARY KEY AUTO_INCREMENT,
+      username VARCHAR(100) UNIQUE NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
       name VARCHAR(255),
       phone VARCHAR(20),
+      role ENUM('user', 'admin', 'moderator') DEFAULT 'user',
+      is_active BOOLEAN DEFAULT true,
+      last_login TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      INDEX idx_email (email)
+      INDEX idx_username (username),
+      INDEX idx_email (email),
+      INDEX idx_role (role)
+    )`,
+
+    // Sessions table
+    `CREATE TABLE IF NOT EXISTS sessions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT NOT NULL,
+      token VARCHAR(500) NOT NULL,
+      expires_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      INDEX idx_user_id (user_id),
+      INDEX idx_expires_at (expires_at)
     )`,
 
     // Bookings table
